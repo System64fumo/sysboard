@@ -6,6 +6,7 @@ class sysboard : public Gtk::Window {
 	public:
 		sysboard();
 		void create_virtual_keyboard();
+		void press_key(int keycode, int state) const;
 
 		zwp_virtual_keyboard_manager_v1 *keyboard_manager;
 		zwp_virtual_keyboard_v1 *virtual_keyboard;
