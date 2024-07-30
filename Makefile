@@ -23,7 +23,7 @@ install: $(all)
 	install $(LIB) $(DESTDIR)/lib/$(LIB)
 
 clean:
-	rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS)
+	rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o
 
 $(EXEC): src/main.o
 	$(CXX) -o $(EXEC) \
@@ -31,16 +31,21 @@ $(EXEC): src/main.o
 	$(CXXFLAGS) \
 	$(LDFLAGS)
 
-$(LIB): $(OBJS) $(PROTO_OBJS)
+$(LIB): $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	$(CXX) -o $(LIB) \
 	$(filter-out src/main.o, $(OBJS)) \
 	$(PROTO_OBJS) \
+	src/os-compatibility.o \
 	$(CXXFLAGS) \
 	-shared
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@ \
 	$(CXXFLAGS)
+
+src/os-compatibility.o: src/os-compatibility.c
+	$(CC) -c src/os-compatibility.c \
+		-o src/os-compatibility.o
 
 $(PROTO_HDRS) $(PROTO_SRCS): $(PROTO_DIR)/$(PROTOS).xml
 	wayland-scanner client-header $< src/$(notdir $(basename $<)).h
