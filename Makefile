@@ -9,10 +9,9 @@ CXXFLAGS = -march=native -mtune=native -Os -s -Wall -flto=auto -fno-exceptions -
 CXXFLAGS += $(shell pkg-config --cflags $(PKGS))
 LDFLAGS = $(shell pkg-config --libs $(PKGS))
 
-PROTOS = virtual-keyboard-unstable-v1
-PROTO_DIR = proto
-PROTO_HDRS = $(addprefix src/, $(addsuffix .h, $(notdir $(PROTOS))))
-PROTO_SRCS = $(addprefix src/, $(addsuffix .c, $(notdir $(PROTOS))))
+PROTOS = $(wildcard proto/*.xml)
+PROTO_HDRS = $(patsubst proto/%.xml, src/%.h, $(PROTOS))
+PROTO_SRCS = $(patsubst proto/%.xml, src/%.c, $(PROTOS))
 PROTO_OBJS = $(PROTO_SRCS:.c=.o)
 
 all: $(EXEC) $(LIB)
@@ -31,7 +30,7 @@ $(EXEC): src/main.o
 	$(CXXFLAGS) \
 	$(LDFLAGS)
 
-$(LIB): $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
+$(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	$(CXX) -o $(LIB) \
 	$(filter-out src/main.o, $(OBJS)) \
 	$(PROTO_OBJS) \
@@ -47,6 +46,8 @@ src/os-compatibility.o: src/os-compatibility.c
 	$(CC) -c src/os-compatibility.c \
 		-o src/os-compatibility.o
 
-$(PROTO_HDRS) $(PROTO_SRCS): $(PROTO_DIR)/$(PROTOS).xml
-	wayland-scanner client-header $< src/$(notdir $(basename $<)).h
-	wayland-scanner public-code $< src/$(notdir $(basename $<)).c
+$(PROTO_HDRS): src/%.h : proto/%.xml
+	wayland-scanner client-header $< $@
+
+$(PROTO_SRCS): src/%.c : proto/%.xml
+	wayland-scanner public-code $< $@

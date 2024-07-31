@@ -20,10 +20,58 @@ static void registry_handler(void *data, struct wl_registry *registry,
 				&zwp_virtual_keyboard_manager_v1_interface, 1u);
 		self->create_virtual_keyboard();
 	}
+	else if (strcmp(interface, zwp_input_method_manager_v2_interface.name) == 0) {
+		self->input_method_manager = (zwp_input_method_manager_v2*)
+			wl_registry_bind(registry, id,
+				&zwp_input_method_manager_v2_interface, 1u);
+		self->create_input_manager();
+	}
 }
 
-static struct wl_registry_listener registry_listener = {
+static wl_registry_listener registry_listener = {
 	&registry_handler
+};
+
+static void input_method_activate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
+	std::cout << "Activate" << std::endl;
+}
+
+static void input_method_deactivate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
+	std::cout << "Deactivate" << std::endl;
+}
+
+static void input_method_surrounding_text(void *data,
+				struct zwp_input_method_v2 *zwp_input_method_v2,
+				const char *text,
+				uint32_t cursor,
+				uint32_t anchor) {
+	// I could probably use this for autocomplete/autocorrect
+}
+
+static void input_method_text_change_cause(void *data,
+				struct zwp_input_method_v2 *zwp_input_method_v2,
+				uint32_t cause) {}
+
+static void input_method_content_type(void *data,
+				struct zwp_input_method_v2 *zwp_input_method_v2,
+				uint32_t hint,
+				uint32_t purpose) {}
+
+static void input_method_done(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
+	auto wl_display = wl_display_connect(NULL);
+	wl_display_roundtrip(wl_display);
+}
+
+static void input_method_unavailable(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {}
+
+static zwp_input_method_v2_listener input_method_listener = {
+	.activate = input_method_activate,
+	.deactivate = input_method_deactivate,
+	.surrounding_text = input_method_surrounding_text,
+	.text_change_cause = input_method_text_change_cause,
+	.content_type = input_method_content_type,
+	.done = input_method_done,
+	.unavailable = input_method_unavailable,
 };
 
 sysboard::sysboard() {
@@ -52,19 +100,17 @@ sysboard::sysboard() {
 	layout *layout_full = Gtk::make_managed<layout>(*this, keymap);
 	set_child(*layout_full);
 
-	auto gdk_display = gdk_display_get_default();
+	gdk_display = gdk_display_get_default();
+	gdk_seat = gdk_display_get_default_seat(gdk_display);
+	seat = gdk_wayland_seat_get_wl_seat(gdk_seat);
 	auto display = gdk_wayland_display_get_wl_display(gdk_display);
 	auto registry = wl_display_get_registry(display);
 	wl_registry_add_listener(registry, &registry_listener, this);
 }
 
 void sysboard::create_virtual_keyboard() {
-	auto gdk_display = gdk_display_get_default();
-	auto gdk_seat = gdk_display_get_default_seat(gdk_display);
-	auto wl_seat = gdk_wayland_seat_get_wl_seat(gdk_seat);
-
 	virtual_keyboard = zwp_virtual_keyboard_manager_v1_create_virtual_keyboard(
-		keyboard_manager, wl_seat);
+		keyboard_manager, seat);
 
 	size_t keymap_size = strlen(keymap) + 1;
 	int keymap_fd = os_create_anonymous_file(keymap_size);
@@ -76,6 +122,11 @@ void sysboard::create_virtual_keyboard() {
 		WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
 		keymap_fd,
 		keymap_size);
+}
+
+void sysboard::create_input_manager() {
+	input_method = zwp_input_method_manager_v2_get_input_method(input_method_manager, seat);
+	zwp_input_method_v2_add_listener(input_method, &input_method_listener, this);
 }
 
 void sysboard::press_key(int keycode, int state) const {
