@@ -2,23 +2,35 @@
 
 #include <gtkmm/gestureclick.h>
 #include <gtkmm/label.h>
-#include <iostream>
 
 layout::layout(const sysboard &window, std::vector<std::vector<std::string>> keymap) : Gtk::Box(Gtk::Orientation::VERTICAL) {
-	for (long unsigned int i = 0; i < keymap.size(); ++i) {
+	set_halign(Gtk::Align::CENTER);
+	for (ulong i = 0; i < keymap.size(); ++i) {
 		Gtk::Box box = Gtk::Box(Gtk::Orientation::HORIZONTAL);
-		box.set_halign(Gtk::Align::CENTER);
 
-		for (long unsigned int j = 0; j < keymap[i].size(); ++j) {
+		for (ulong j = 0; j < keymap[i].size(); ++j) {
 			std::string keymap_data = keymap[i][j];
 			std::istringstream iss(keymap_data);
 			std::string text;
 			std::string keycode;
-			iss >> text >> keycode;
+			std::string str_multiplier;
+			iss >> text >> keycode >> str_multiplier;
 			int code = std::stoi(keycode);
+			int multiplier = std::stoi(str_multiplier);
 
 			Gtk::Label *label = Gtk::make_managed<Gtk::Label>(text);
-			label->set_size_request(btn_size, btn_size);
+
+			if (j == 0) {
+				label->set_size_request(btn_size * multiplier, btn_size);
+				label->set_halign(Gtk::Align::START);
+			}
+			else if (j == keymap[i].size() - 1) {
+				label->set_size_request(btn_size * multiplier, btn_size);
+				label->set_halign(Gtk::Align::END);
+			}
+			else
+				label->set_size_request(btn_size * multiplier, btn_size);
+
 			label->set_focusable(false);
 			auto gesture_click = Gtk::GestureClick::create();
 			label->add_controller(gesture_click);
