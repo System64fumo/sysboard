@@ -2,6 +2,7 @@
 #include "layout.hpp"
 #include "keymap.tpp"
 #include "os-compatibility.h"
+#include "css.hpp"
 
 #include <gdk/wayland/gdkwayland.h>
 #include <gtk4-layer-shell.h>
@@ -105,6 +106,7 @@ sysboard::sysboard() {
 
 	layout *layout_full = Gtk::make_managed<layout>(*this, keymap);
 	set_child(*layout_full);
+	layout_full->set_margin(10);
 
 	gdk_display = gdk_display_get_default();
 	gdk_seat = gdk_display_get_default_seat(gdk_display);
@@ -112,6 +114,11 @@ sysboard::sysboard() {
 	auto display = gdk_wayland_display_get_wl_display(gdk_display);
 	auto registry = wl_display_get_registry(display);
 	wl_registry_add_listener(registry, &registry_listener, this);
+
+	// Load custom css
+	std::string home_dir = getenv("HOME");
+	std::string css_path = home_dir + "/.config/sys64/board/style.css";
+	css_loader css(css_path, this);
 }
 
 void sysboard::create_virtual_keyboard() {
