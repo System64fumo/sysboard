@@ -33,11 +33,13 @@ static wl_registry_listener registry_listener = {
 };
 
 static void input_method_activate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
-	std::cout << "Activate" << std::endl;
+	auto self = static_cast<sysboard*>(data);
+	self->show();
 }
 
 static void input_method_deactivate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
-	std::cout << "Deactivate" << std::endl;
+	auto self = static_cast<sysboard*>(data);
+	self->hide();
 }
 
 static void input_method_surrounding_text(void *data,
@@ -91,10 +93,14 @@ sysboard::sysboard() {
 	show();
 
 	// Temporary
+	// Use this to create a new layout: https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+	// Order: Label Code Size
 	std::vector<std::vector<std::string>> keymap = {
-		{"q 16", "w 17", "e 18", "r 19", "t 20", "y 21", "u 22", "i 23", "o 24", "p 25"},
-		{"a 30", "s 31", "d 32", "f 33", "g 34", "h 35", "j 36", "k 37", "l 38"},
-		{"z 44", "x 45", "c 46", "v 47", "b 48", "n 49", "m 50"}
+		{"Esc 1 1", "1 2 1", "2 3 1", "3 4 1", "4 5 1", "5 6 1", "6 7 1", "7 8 1", "8 9 1", "9 10 1", "0 11 1", "- 12 1", "= 13 1", "Backspace 14 3"},
+		{"Tab 15 2", "q 16 1", "w 17 1", "e 18 1", "r 19 1", "t 20 1", "y 21 1", "u 22 1", "i 23 1", "o 24 1", "p 25 1", "[ 26 1", "] 27 1", "\\ 43 2"},
+		{"Caps 58 2", "a 30 1", "s 31 1", "d 32 1", "f 33 1", "g 34 1", "h 35 1", "j 36 1", "k 37 1", "l 38 1", "; 39 1", "' 40 1", "Enter 28 3"},
+		{"Shift 42 3", "z 44 1", "x 45 1", "c 46 1", "v 47 1", "b 48 1", "n 49 1", "m 50 1", ", 51 1", ". 52 1", "/ 53 1", "Shift 54 3"},
+		{"Ctrl 29 1", "Alt 56 1", "Meta 125 1", "Space 57 12", "Alt 100 1"},
 	};
 
 	layout *layout_full = Gtk::make_managed<layout>(*this, keymap);
