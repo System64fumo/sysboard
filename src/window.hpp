@@ -20,6 +20,8 @@ class sysboard : public Gtk::Window {
 		GdkDisplay *gdk_display;
 		GdkSeat *gdk_seat;
 		wl_seat *seat;
+
+		void initialize_protos();
 };
 
 extern "C" {
