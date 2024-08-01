@@ -8,6 +8,6 @@ class layout : public Gtk::Box {
 		layout(const sysboard &window, std::vector<std::vector<std::string>> keymap);
 
 	private:
-		int btn_size = 70;
+		double btn_size = 70;
 };
 
