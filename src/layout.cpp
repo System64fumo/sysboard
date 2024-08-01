@@ -56,12 +56,13 @@ void layout::handle_keycode(
 	const double &code,
 	const bool &pressed) {
 
+	auto style = label->get_style_context();
+
 	// Shift
 	if (code == 42) {
 		if (!pressed)
 			return;
 
-		auto style = label->get_style_context();
 		if (style->has_class("toggled")) {
 			style->remove_class("toggled");
 			window->set_modifier(0);
@@ -76,9 +77,11 @@ void layout::handle_keycode(
 	}
 
 	if (pressed) {
+		style->add_class("pressed");
 		window->press_key(code, 1);
 	}
 	else {
+		style->remove_class("pressed");
 		window->press_key(code, 0);
 	}
 }

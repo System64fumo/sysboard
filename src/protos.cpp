@@ -103,14 +103,14 @@ void sysboard::create_input_manager() {
 	zwp_input_method_v2_add_listener(input_method, &input_method_listener, this);
 }
 
-void sysboard::press_key(int keycode, int state) const {
+void sysboard::press_key(const int &keycode, const int &state) {
 	timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	guint32 time = ts.tv_sec * 1000ll + ts.tv_nsec / 1000000ll;
 	zwp_virtual_keyboard_v1_key(virtual_keyboard, time, keycode, state);
 }
 
-void sysboard::set_modifier(int mod) {
+void sysboard::set_modifier(const int &mod) {
 	zwp_virtual_keyboard_v1_modifiers(virtual_keyboard,
 		mod, 0, 0, 0);
 }
