@@ -23,7 +23,7 @@ sysboard::sysboard() {
 	show();
 	initialize_protos();
 
-	layout *layout_full = Gtk::make_managed<layout>(*this, keymap_desktop);
+	layout *layout_full = Gtk::make_managed<layout>(this, keymap_desktop);
 	set_child(*layout_full);
 	layout_full->set_margin(10);
 
