@@ -109,3 +109,8 @@ void sysboard::press_key(int keycode, int state) const {
 	guint32 time = ts.tv_sec * 1000ll + ts.tv_nsec / 1000000ll;
 	zwp_virtual_keyboard_v1_key(virtual_keyboard, time, keycode, state);
 }
+
+void sysboard::set_modifier(int mod) {
+	zwp_virtual_keyboard_v1_modifiers(virtual_keyboard,
+		mod, 0, 0, 0);
+}

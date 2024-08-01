@@ -1,9 +1,7 @@
 #include "layout.hpp"
 
-#include <gtkmm/gestureclick.h>
-#include <gtkmm/label.h>
-
-layout::layout(const sysboard &window, std::vector<std::vector<std::string>> keymap) : Gtk::Box(Gtk::Orientation::VERTICAL) {
+layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap) : Gtk::Box(Gtk::Orientation::VERTICAL) {
+	window = win;
 	set_halign(Gtk::Align::CENTER);
 	for (ulong i = 0; i < keymap.size(); ++i) {
 		Gtk::Box box = Gtk::Box(Gtk::Orientation::HORIZONTAL);
@@ -33,20 +31,54 @@ layout::layout(const sysboard &window, std::vector<std::vector<std::string>> key
 				label->set_size_request(btn_size * multiplier, btn_size);
 
 			label->set_focusable(false);
-			auto gesture_click = Gtk::GestureClick::create();
+			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
 			label->add_controller(gesture_click);
 
 			// Handle events
-			gesture_click->signal_pressed().connect([&, code](int, double, double) {
-				window.press_key(code, 1);
+			// TODO: Handle special events (code 0) based on their label
+			// TODO: Toggle mod keys
+			gesture_click->signal_pressed().connect([&, label, code](int, double, double) {
+				handle_keycode(label, code, true);
 			});
-			gesture_click->signal_released().connect([&, code](int, double, double) {
-				window.press_key(code, 0);
+			gesture_click->signal_released().connect([&, label, code](int, double, double) {
+				handle_keycode(label, code, false);
 			});
-
+			
 			box.append(*label);
 		}
 
 		append(box);
+	}
+}
+
+void layout::handle_keycode(
+	Gtk::Label *label,
+	const double &code,
+	const bool &pressed) {
+
+	// Shift
+	if (code == 42) {
+		if (!pressed)
+			return;
+
+		auto style = label->get_style_context();
+		if (style->has_class("toggled")) {
+			style->remove_class("toggled");
+			window->set_modifier(0);
+			window->press_key(code, 0);
+		}
+		else {
+			style->add_class("toggled");
+			window->set_modifier(1);
+			window->press_key(code, 1);
+		}
+		return;
+	}
+
+	if (pressed) {
+		window->press_key(code, 1);
+	}
+	else {
+		window->press_key(code, 0);
 	}
 }
