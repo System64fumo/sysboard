@@ -7,6 +7,7 @@ layout::layout(const sysboard &window, std::vector<std::vector<std::string>> key
 	set_halign(Gtk::Align::CENTER);
 	for (ulong i = 0; i < keymap.size(); ++i) {
 		Gtk::Box box = Gtk::Box(Gtk::Orientation::HORIZONTAL);
+		box.set_halign(Gtk::Align::CENTER);
 
 		for (ulong j = 0; j < keymap[i].size(); ++j) {
 			std::string keymap_data = keymap[i][j];
@@ -16,7 +17,7 @@ layout::layout(const sysboard &window, std::vector<std::vector<std::string>> key
 			std::string str_multiplier;
 			iss >> text >> keycode >> str_multiplier;
 			int code = std::stoi(keycode);
-			int multiplier = std::stoi(str_multiplier);
+			double multiplier = std::stod(str_multiplier);
 
 			Gtk::Label *label = Gtk::make_managed<Gtk::Label>(text);
 
