@@ -58,19 +58,26 @@ void layout::handle_keycode(
 
 	auto style = label->get_style_context();
 
-	// Shift
-	if (code == 42) {
+	// Shift, Ctrl
+	if (code == 42 || code == 29) {
 		if (!pressed)
 			return;
 
+		std::map<int, int> mod_map = {
+			{42, 1},
+			{29, 4}
+		};
+
 		if (style->has_class("toggled")) {
 			style->remove_class("toggled");
-			window->set_modifier(0);
+			mods -= mod_map[code];
+			window->set_modifier(mods);
 			window->press_key(code, 0);
 		}
 		else {
 			style->add_class("toggled");
-			window->set_modifier(1);
+			mods += mod_map[code];
+			window->set_modifier(mods);
 			window->press_key(code, 1);
 		}
 		return;

@@ -12,6 +12,7 @@ class layout : public Gtk::Box {
 	private:
 		sysboard *window;
 		double btn_size = 70;
+		int mods = 0;
 
 		void handle_keycode(
 			Gtk::Label *label,
