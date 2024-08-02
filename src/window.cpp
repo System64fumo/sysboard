@@ -23,9 +23,18 @@ sysboard::sysboard() {
 	show();
 	initialize_protos();
 
+	auto display = gdk_display_get_default();
+	auto monitors = gdk_display_get_monitors(display);
+	auto monitorCount = g_list_model_get_n_items(monitors);
+	auto monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+
+	GdkRectangle geometry;
+	gdk_monitor_get_geometry(monitor, &geometry);
+	max_width = geometry.width - (margin * 2);
+
 	layout *layout_full = Gtk::make_managed<layout>(this, keymap_desktop);
 	set_child(*layout_full);
-	layout_full->set_margin(10);
+	layout_full->set_margin(margin);
 
 	// Load custom css
 	std::string home_dir = getenv("HOME");

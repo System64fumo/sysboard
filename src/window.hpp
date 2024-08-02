@@ -14,8 +14,11 @@ class sysboard : public Gtk::Window {
 		zwp_virtual_keyboard_manager_v1 *keyboard_manager;
 		zwp_virtual_keyboard_v1 *virtual_keyboard;
 
-		zwp_input_method_manager_v2 *input_method_manager = NULL;
+		zwp_input_method_manager_v2 *input_method_manager;
 		zwp_input_method_v2 *input_method;
+
+		int max_width = 0;
+		int margin = 10;
 
 	private:
 		GdkDisplay *gdk_display;
