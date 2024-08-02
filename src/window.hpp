@@ -2,10 +2,13 @@
 #include <gtkmm/window.h>
 #include "virtual-keyboard-unstable-v1.h"
 #include "input-method-unstable-v2.h"
+#include "config.hpp"
 
 class sysboard : public Gtk::Window {
 	public:
-		sysboard();
+		sysboard(const config_board &cfg);
+		config_board config_main;
+
 		void create_virtual_keyboard();
 		void create_input_manager();
 		void press_key(const int &keycode, const int &state);
@@ -18,7 +21,6 @@ class sysboard : public Gtk::Window {
 		zwp_input_method_v2 *input_method;
 
 		int max_width = 0;
-		int margin = 10;
 
 	private:
 		GdkDisplay *gdk_display;
@@ -29,6 +31,6 @@ class sysboard : public Gtk::Window {
 };
 
 extern "C" {
-	sysboard *sysboard_create();
+	sysboard *sysboard_create(const config_board &cfg);
 }
 

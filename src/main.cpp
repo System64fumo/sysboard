@@ -24,8 +24,10 @@ int main(int argc, char *argv[]) {
 	Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("funky.sys64.sysboard");
 	app->hold();
 
+	config_board cfg;
+
 	load_libsysboard();
-	sysboard *window = sysboard_create_ptr();
+	sysboard *window = sysboard_create_ptr(cfg);
 
 	return app->run();
 }
