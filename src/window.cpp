@@ -6,7 +6,9 @@
 #include <gtk4-layer-shell.h>
 #include <iostream>
 
-sysboard::sysboard() {
+sysboard::sysboard(const config_board &cfg) {
+	config_main = cfg;
+
 	// Layer shell stuff
 	gtk_layer_init_for_window(gobj());
 	gtk_layer_set_keyboard_mode(gobj(), GTK_LAYER_SHELL_KEYBOARD_MODE_NONE);
@@ -30,11 +32,15 @@ sysboard::sysboard() {
 
 	GdkRectangle geometry;
 	gdk_monitor_get_geometry(monitor, &geometry);
-	max_width = geometry.width - (margin * 2);
+	max_width = geometry.width - (config_main.margin * 2);
 
-	layout *layout_full = Gtk::make_managed<layout>(this, keymap_desktop);
-	set_child(*layout_full);
-	layout_full->set_margin(margin);
+	std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
+	layout_map["full"] = keymap_desktop;
+	layout_map["mobile"] = keymap_mobile;
+
+	layout *layout_board = Gtk::make_managed<layout>(this, layout_map[config_main.layout]);
+	set_child(*layout_board);
+	layout_board->set_margin(config_main.margin);
 
 	// Load custom css
 	std::string home_dir = getenv("HOME");
@@ -43,7 +49,7 @@ sysboard::sysboard() {
 }
 
 extern "C" {
-	sysboard *sysboard_create() {
-		return new sysboard();
+	sysboard *sysboard_create(const config_board &cfg) {
+		return new sysboard(cfg);
 	}
 }
