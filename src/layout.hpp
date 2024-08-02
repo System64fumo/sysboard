@@ -7,7 +7,7 @@
 
 class layout : public Gtk::Box {
 	public:
-		layout(sysboard *win, std::vector<std::vector<std::string>> keymap);
+		layout(sysboard *win, std::vector<std::vector<std::string>> keymap, const int &max_width);
 
 	private:
 		sysboard *window;

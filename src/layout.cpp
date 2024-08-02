@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap) : Gtk::Box(Gtk::Orientation::VERTICAL) {
+layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
 	window = win;
 	set_halign(Gtk::Align::CENTER);
 
@@ -15,23 +15,21 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap) : Gt
 		}
 	);
 
-	btn_size = win->max_width / largest_vec_it->size();
+	btn_size = max_width / largest_vec_it->size();
 
 	double pixels = 0;
 
 	for (const std::string& str : *largest_vec_it) {
 		std::istringstream iss(str);
 		std::string text;
-		std::string keycode;
-		std::string str_multiplier;
-		iss >> text >> keycode >> str_multiplier;
-		int code = std::stoi(keycode);
-		double multiplier = std::stod(str_multiplier);
+		int code;
+		double multiplier;
+		iss >> text >> code >> multiplier;
 
 		pixels += btn_size * multiplier;
 	}
 
-	double scaling_factor = win->max_width / pixels;
+	double scaling_factor = max_width / pixels;
 	btn_size = btn_size * scaling_factor;
 
 	// Populate layout
@@ -43,11 +41,9 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap) : Gt
 			std::string keymap_data = keymap[i][j];
 			std::istringstream iss(keymap_data);
 			std::string text;
-			std::string keycode;
-			std::string str_multiplier;
-			iss >> text >> keycode >> str_multiplier;
-			int code = std::stoi(keycode);
-			double multiplier = std::stod(str_multiplier);
+			int code;
+			double multiplier;
+			iss >> text >> code >> multiplier;
 
 			Gtk::Label *label = Gtk::make_managed<Gtk::Label>(text);
 

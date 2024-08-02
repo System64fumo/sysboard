@@ -20,14 +20,13 @@ class sysboard : public Gtk::Window {
 		zwp_input_method_manager_v2 *input_method_manager;
 		zwp_input_method_v2 *input_method;
 
-		int max_width = 0;
-
 	private:
 		GdkDisplay *gdk_display;
 		GdkSeat *gdk_seat;
 		wl_seat *seat;
 
 		void initialize_protos();
+		void load_layout();
 };
 
 extern "C" {

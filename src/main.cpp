@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
 
 	load_libsysboard();
 	sysboard *window = sysboard_create_ptr(cfg);
+	(void)window;
 
 	return app->run();
 }
