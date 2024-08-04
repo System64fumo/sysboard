@@ -1,8 +1,8 @@
 #pragma once
 #include "window.hpp"
+#include "key.hpp"
 
 #include <gtkmm/box.h>
-#include <gtkmm/label.h>
 #include <gtkmm/gestureclick.h>
 
 class layout : public Gtk::Box {
@@ -16,8 +16,7 @@ class layout : public Gtk::Box {
 		int mods = 0;
 
 		void handle_keycode(
-			Gtk::Label *label,
-			const double &code,
+			key *kbd_key,
 			const bool &pressed);
 };
 
