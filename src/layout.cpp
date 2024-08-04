@@ -1,6 +1,7 @@
 #include "layout.hpp"
 
 #include <algorithm>
+#include <bitset>
 
 layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
 	window = win;
@@ -21,10 +22,11 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 
 	for (const std::string& str : *largest_vec_it) {
 		std::istringstream iss(str);
-		std::string text;
-		int code;
 		double multiplier;
-		iss >> text >> code >> multiplier;
+		int code;
+		std::string label;
+		std::string label_shift;
+		iss >> multiplier >> code >> label >> label_shift;
 
 		pixels += btn_size * multiplier;
 	}
@@ -39,12 +41,13 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 
 		for (ulong j = 0; j < keymap[i].size(); ++j) {
 			std::istringstream iss(keymap[i][j]);
-			std::string text;
-			int code;
 			double multiplier;
-			iss >> text >> code >> multiplier;
+			int code;
+			std::string label;
+			std::string label_shift;
+			iss >> multiplier >> code >> label >> label_shift;
 
-			key *kbd_key = Gtk::make_managed<key>(code, text, text);
+			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
 			kbd_key->set_focusable(false);
 			kbd_key->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
 
@@ -97,6 +100,17 @@ void layout::handle_keycode(
 			window->set_modifier(mods);
 			window->press_key(kbd_key->code, 1);
 		}
+
+		std::bitset<8> bits(mods);
+		bool has_shift = bits[0];
+
+		for (auto& row : get_children()) {
+			for (auto& row_child : row->get_children()) {
+				key* kbd_button = static_cast<key*>(row_child);
+				kbd_button->set_shift(has_shift);
+			}
+		}
+
 		return;
 	}
 
