@@ -38,56 +38,45 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 		box.set_halign(Gtk::Align::CENTER);
 
 		for (ulong j = 0; j < keymap[i].size(); ++j) {
-			std::string keymap_data = keymap[i][j];
-			std::istringstream iss(keymap_data);
+			std::istringstream iss(keymap[i][j]);
 			std::string text;
 			int code;
 			double multiplier;
 			iss >> text >> code >> multiplier;
 
-			Gtk::Label *label = Gtk::make_managed<Gtk::Label>(text);
+			key *kbd_key = Gtk::make_managed<key>(code, text, text);
+			kbd_key->set_focusable(false);
+			kbd_key->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
 
-			if (j == 0) {
-				label->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
-				label->set_halign(Gtk::Align::START);
-			}
-			else if (j == keymap[i].size() - 1) {
-				label->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
-				label->set_halign(Gtk::Align::END);
-			}
-			else
-				label->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
-
-			label->set_focusable(false);
 			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
-			label->add_controller(gesture_click);
+			kbd_key->add_controller(gesture_click);
 
 			// Handle events
 			// TODO: Handle special events (code 0) based on their label
 			// TODO: Toggle mod keys
-			gesture_click->signal_pressed().connect([&, label, code](int, double, double) {
-				handle_keycode(label, code, true);
+			gesture_click->signal_pressed().connect([&, kbd_key](int, double, double) {
+				handle_keycode(kbd_key, true);
 			});
-			gesture_click->signal_released().connect([&, label, code](int, double, double) {
-				handle_keycode(label, code, false);
+			gesture_click->signal_released().connect([&, kbd_key](int, double, double) {
+				handle_keycode(kbd_key, false);
 			});
-			
-			box.append(*label);
+			box.append(*kbd_key);
 		}
 
 		append(box);
 	}
 }
 
+// Should this be moved to the key itself?
+// Wouldn't that use more resources?
 void layout::handle_keycode(
-	Gtk::Label *label,
-	const double &code,
+	key *kbd_key,
 	const bool &pressed) {
 
-	auto style = label->get_style_context();
+	auto style = kbd_key->get_style_context();
 
 	// Shift, Ctrl
-	if (code == 42 || code == 29) {
+	if (kbd_key->code == 42 || kbd_key->code == 29) {
 		if (!pressed)
 			return;
 
@@ -98,25 +87,25 @@ void layout::handle_keycode(
 
 		if (style->has_class("toggled")) {
 			style->remove_class("toggled");
-			mods -= mod_map[code];
+			mods -= mod_map[kbd_key->code];
 			window->set_modifier(mods);
-			window->press_key(code, 0);
+			window->press_key(kbd_key->code, 0);
 		}
 		else {
 			style->add_class("toggled");
-			mods += mod_map[code];
+			mods += mod_map[kbd_key->code];
 			window->set_modifier(mods);
-			window->press_key(code, 1);
+			window->press_key(kbd_key->code, 1);
 		}
 		return;
 	}
 
 	if (pressed) {
 		style->add_class("pressed");
-		window->press_key(code, 1);
+		window->press_key(kbd_key->code, 1);
 	}
 	else {
 		style->remove_class("pressed");
-		window->press_key(code, 0);
+		window->press_key(kbd_key->code, 0);
 	}
 }
