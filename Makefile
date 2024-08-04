@@ -5,9 +5,11 @@ SRCS = $(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DESTDIR = $(HOME)/.local
 
-CXXFLAGS = -march=native -mtune=native -Os -s -Wall -flto=auto -fno-exceptions -fPIC
+CXXFLAGS += -Os -s -Wall -flto=auto -fno-exceptions -fPIC
+LDFLAGS += -Wl,-O1,--as-needed,-z,now,-z,pack-relative-relocs
+
 CXXFLAGS += $(shell pkg-config --cflags $(PKGS))
-LDFLAGS = $(shell pkg-config --libs $(PKGS))
+LDFLAGS += $(shell pkg-config --libs $(PKGS))
 
 PROTOS = $(wildcard proto/*.xml)
 PROTO_HDRS = $(patsubst proto/%.xml, src/%.h, $(PROTOS))
@@ -28,7 +30,7 @@ $(EXEC): src/main.o
 	$(CXX) -o $(EXEC) \
 	src/main.o \
 	$(CXXFLAGS) \
-	$(LDFLAGS)
+	$(shell pkg-config --libs gtkmm-4.0 gtk4-layer-shell-0)
 
 $(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	$(CXX) -o $(LIB) \
@@ -36,6 +38,7 @@ $(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	$(PROTO_OBJS) \
 	src/os-compatibility.o \
 	$(CXXFLAGS) \
+	$(LDFLAGS) \
 	-shared
 
 %.o: %.cpp
