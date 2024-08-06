@@ -78,14 +78,16 @@ void layout::handle_keycode(
 
 	auto style = kbd_key->get_style_context();
 
-	// Shift, Ctrl
-	if (kbd_key->code == 42 || kbd_key->code == 29) {
+	// Shift, Ctrl, Alt, Meta
+	if (kbd_key->code == 42 || kbd_key->code == 29 || kbd_key->code == 56 || kbd_key->code == 125) {
 		if (!pressed)
 			return;
 
 		std::map<int, int> mod_map = {
 			{42, 1},
-			{29, 4}
+			{29, 4},
+			{56, 8},
+			{125, 64},
 		};
 
 		if (style->has_class("toggled")) {
