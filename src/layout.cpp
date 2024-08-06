@@ -32,7 +32,9 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 	}
 
 	double scaling_factor = max_width / pixels;
-	btn_size = btn_size * scaling_factor;
+
+	// Convert to int to better align the keys
+	btn_size = (int)(btn_size * scaling_factor);
 
 	// Populate layout
 	for (ulong i = 0; i < keymap.size(); ++i) {
@@ -56,7 +58,6 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 
 			// Handle events
 			// TODO: Handle special events (code 0) based on their label
-			// TODO: Toggle mod keys
 			gesture_click->signal_pressed().connect([&, kbd_key](int, double, double) {
 				handle_keycode(kbd_key, true);
 			});
@@ -70,25 +71,20 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 	}
 }
 
-// Should this be moved to the key itself?
-// Wouldn't that use more resources?
-void layout::handle_keycode(
-	key *kbd_key,
-	const bool &pressed) {
-
+void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	auto style = kbd_key->get_style_context();
 
-	// Shift, Ctrl, Alt, Meta
-	if (kbd_key->code == 42 || kbd_key->code == 29 || kbd_key->code == 56 || kbd_key->code == 125) {
+	std::map<int, int> mod_map = {
+		{42, 1},	// Shift
+		{29, 4},	// Ctrl
+		{56, 8},	// Alt
+		{125, 64},	// Meta
+	};
+
+	// Handle modifiers
+	if (mod_map.find(kbd_key->code) != mod_map.end()) {
 		if (!pressed)
 			return;
-
-		std::map<int, int> mod_map = {
-			{42, 1},
-			{29, 4},
-			{56, 8},
-			{125, 64},
-		};
 
 		if (style->has_class("toggled")) {
 			style->remove_class("toggled");
@@ -106,6 +102,7 @@ void layout::handle_keycode(
 		std::bitset<8> bits(mods);
 		bool has_shift = bits[0];
 
+		// Set alternate (shift) labels
 		for (auto& row : get_children()) {
 			for (auto& row_child : row->get_children()) {
 				key* kbd_button = static_cast<key*>(row_child);

@@ -15,8 +15,5 @@ class layout : public Gtk::Box {
 		double height_multiplier = 0.75;
 		int mods = 0;
 
-		void handle_keycode(
-			key *kbd_key,
-			const bool &pressed);
+		void handle_keycode(key *kbd_key, const bool &pressed);
 };
-
