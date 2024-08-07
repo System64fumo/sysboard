@@ -12,7 +12,6 @@ class layout : public Gtk::Box {
 	private:
 		sysboard *window;
 		double btn_size = 0;
-		double height_multiplier = 0.75;
 		int mods = 0;
 
 		void handle_keycode(key *kbd_key, const bool &pressed);

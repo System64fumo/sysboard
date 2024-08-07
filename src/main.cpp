@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
 	load_libsysboard();
 	sysboard *window = sysboard_create_ptr(config_main);
-	(void)window;
+	(void)window; // This is to avoid the unused variable warning
 
 	return app->run();
 }
