@@ -14,8 +14,10 @@ class layout : public Gtk::Box {
 		std::string keymap_name;
 		int max_width;
 
+		std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
 		std::vector<std::vector<std::string>> keymap;
-		double btn_size = 0;
+		int btn_size = 0;
+		std::map<int, int> mod_map;
 		int mods = 0;
 
 		void load();

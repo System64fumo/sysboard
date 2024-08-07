@@ -10,30 +10,34 @@ layout::layout(sysboard *win, const std::string &keymap_name, const int &max_wid
 	this->max_width = max_width;
 	set_halign(Gtk::Align::CENTER);
 
-	load();
-}
-
-void layout::load() {
-	// TODO: Clean this up
-	std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
+	// Layouts
 	layout_map["full"] = keymap_desktop;
 	layout_map["mobile"] = keymap_mobile;
 	layout_map["mobile_numbers"] = keymap_mobile_numbers;
 
+	// Modifiers
+	mod_map[42] = 1;	// Shift
+	mod_map[29] = 4;	// Ctrl
+	mod_map[56] = 8;	// Alt
+	mod_map[125] = 4;	// Meta
+
+	load();
+}
+
+void layout::load() {
 	keymap = layout_map[keymap_name];
 
 	// Dynamic scaling
 	auto largest_vec_it = std::max_element(
 		keymap.begin(), keymap.end(),
-		[](const std::vector<std::string>& a, const std::vector<std::string>& b) {
+		[](const auto& a, const auto& b) {
 			return a.size() < b.size();
 		}
 	);
-
 	btn_size = max_width / largest_vec_it->size();
 
+	// Get the widest row
 	double pixels = 0;
-
 	for (const std::string& str : *largest_vec_it) {
 		std::istringstream iss(str);
 		double multiplier;
@@ -45,16 +49,15 @@ void layout::load() {
 		pixels += btn_size * multiplier;
 	}
 
+	// Scale the button
 	double scaling_factor = max_width / pixels;
+	btn_size = btn_size * scaling_factor;
 
-	// Convert to int to better align the keys
-	btn_size = (int)(btn_size * scaling_factor);
-
-	// Populate layout
+	// Rows
 	for (ulong i = 0; i < keymap.size(); ++i) {
 		Gtk::Box box = Gtk::Box(Gtk::Orientation::HORIZONTAL);
-		box.set_halign(Gtk::Align::CENTER);
 
+		// Keys
 		for (ulong j = 0; j < keymap[i].size(); ++j) {
 			std::istringstream iss(keymap[i][j]);
 			double multiplier;
@@ -71,14 +74,25 @@ void layout::load() {
 			kbd_key->add_controller(gesture_click);
 
 			// Handle events
-			// TODO: Handle special events (code 0) based on their label
 			gesture_click->signal_pressed().connect([&, kbd_key](int, double, double) {
 				handle_keycode(kbd_key, true);
 			});
 			gesture_click->signal_released().connect([&, kbd_key](int, double, double) {
 				handle_keycode(kbd_key, false);
 			});
+
 			box.append(*kbd_key);
+
+			// Starting key
+			if (j == 0) {
+				kbd_key->set_hexpand(true);
+				kbd_key->set_halign((multiplier == 1) ? Gtk::Align::END : Gtk::Align::START);
+			}
+			// Ending key
+			else if (j == keymap[i].size() - 1) {
+				kbd_key->set_hexpand(true);
+				kbd_key->set_halign((multiplier == 1) ? Gtk::Align::START : Gtk::Align::END);
+			}
 		}
 
 		append(box);
@@ -87,13 +101,6 @@ void layout::load() {
 
 void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	auto style = kbd_key->get_style_context();
-
-	std::map<int, int> mod_map = {
-		{42, 1},	// Shift
-		{29, 4},	// Ctrl
-		{56, 8},	// Alt
-		{125, 64},	// Meta
-	};
 
 	// Handle modifiers
 	if (mod_map.find(kbd_key->code) != mod_map.end()) {
@@ -148,6 +155,10 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 		auto children = get_children();
 		for (auto& child : children)
 			remove(*child);
+
+		// Reset any currently active modifiers
+		mods = 0;
+		window->set_modifier(mods);
 
 		load();
 	}
