@@ -21,13 +21,43 @@ void load_libsysboard() {
 }
 
 int main(int argc, char *argv[]) {
+	while (true) {
+		switch(getopt(argc, argv, "m:dH:dl:dh")) {
+			case 'm':
+				config_main.margin = std::stoi(optarg);
+				continue;
+
+			case 'H':
+				config_main.height_multiplier = std::stod(optarg);
+				continue;
+
+			case 'l':
+				config_main.layout = optarg;
+				continue;
+
+			case 'h':
+			default :
+				std::cout << "usage:" << std::endl;
+				std::cout << "  sysboard [argument...]:\n" << std::endl;
+				std::cout << "arguments:" << std::endl;
+				std::cout << "  -m	Set margin" << std::endl;
+				std::cout << "  -H	Set height multiplier" << std::endl;
+				std::cout << "  -l	Set layout" << std::endl;
+				std::cout << "  -h	Show this help message" << std::endl;
+				return 0;
+
+			case -1:
+				break;
+			}
+
+			break;
+	}
+
 	Glib::RefPtr<Gtk::Application> app = Gtk::Application::create("funky.sys64.sysboard");
 	app->hold();
 
-	config_board cfg;
-
 	load_libsysboard();
-	sysboard *window = sysboard_create_ptr(cfg);
+	sysboard *window = sysboard_create_ptr(config_main);
 	(void)window;
 
 	return app->run();
