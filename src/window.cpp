@@ -20,7 +20,6 @@ sysboard::sysboard(const config_board &cfg) {
 
 	// Initialization
 	set_name("sysboard");
-	show();
 	initialize_protos();
 	load_layout();
 

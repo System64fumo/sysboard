@@ -51,7 +51,7 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 
 			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
 			kbd_key->set_focusable(false);
-			kbd_key->set_size_request(btn_size * multiplier, btn_size * height_multiplier);
+			kbd_key->set_size_request(btn_size * multiplier, btn_size * win->config_main.height_multiplier);
 
 			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
 			kbd_key->add_controller(gesture_click);
