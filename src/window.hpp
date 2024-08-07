@@ -13,6 +13,7 @@ class sysboard : public Gtk::Window {
 		void create_input_manager();
 		void press_key(const int &keycode, const int &state);
 		void set_modifier(const int &mod);
+		void load_layout();
 
 		zwp_virtual_keyboard_manager_v1 *keyboard_manager;
 		zwp_virtual_keyboard_v1 *virtual_keyboard;
@@ -26,7 +27,6 @@ class sysboard : public Gtk::Window {
 		wl_seat *seat;
 
 		void initialize_protos();
-		void load_layout();
 };
 
 extern "C" {

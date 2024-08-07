@@ -1,6 +1,5 @@
 #include "window.hpp"
 #include "layout.hpp"
-#include "layouts.hpp"
 #include "css.hpp"
 
 #include <gtk4-layer-shell.h>
@@ -37,11 +36,7 @@ void sysboard::load_layout() {
 	gdk_monitor_get_geometry(monitor, &geometry);
 	int max_width = geometry.width - (config_main.margin * 2);
 
-	std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
-	layout_map["full"] = keymap_desktop;
-	layout_map["mobile"] = keymap_mobile;
-
-	layout *layout_board = Gtk::make_managed<layout>(this, layout_map[config_main.layout], max_width);
+	layout *layout_board = Gtk::make_managed<layout>(this, config_main.layout, max_width);
 	set_child(*layout_board);
 	layout_board->set_margin(config_main.margin);
 }

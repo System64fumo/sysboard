@@ -17,3 +17,11 @@ std::vector<std::vector<std::string>> keymap_mobile = {
 	{"1.5 42 Shift Shift", "1 44 z Z", "1 45 x X", "1 46 c C", "1 47 v V", "1 48 b B", "1 49 n N", "1 50 m M", "1.5 14 Backspace Backspace"},
 	{"2 0 123 123", "6 57 Space Space", "2 28 Enter Enter"},
 };
+
+std::vector<std::vector<std::string>> keymap_mobile_numbers = {
+	{"1 1 Esc Esc", "1 15 Tab Tab", "1 29 Ctrl Ctrl", "1 125 Meta Meta", "1 56 Alt Alt", "1 53 / ?", "1 105 ← ←", "1 103 ↑ ↑", "1 108 ↓ ↓", "1 106 → →"},
+	{"1 2 1 !", "1 3 2 @", "1 4 3 #", "1 5 4 $", "1 6 5 %", "1 7 6 ^", "1 8 7 &", " 1 9 8 *", "1 10 9 (", "1 11 0 )"},
+	{"1 12 - _", "1 13 = +", "1 26 [ {", "1 27 ] }", "1 43 \\ |", "1 39 ; :", "1 40 ' \"", "1 41 ` ~"},
+	{"1.5 42 Shift Shift", "1 51 , <", "1 52 . >", "1 53 / ?", "1.5 14 Backspace Backspace"},
+	{"2 0 abc abc", "6 57 Space Space", "2 28 Enter Enter"},
+};
