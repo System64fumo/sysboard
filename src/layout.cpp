@@ -1,13 +1,27 @@
 #include "layout.hpp"
+#include "layouts.hpp"
 
 #include <algorithm>
 #include <bitset>
 
-layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
+layout::layout(sysboard *win, const std::string &keymap_name, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
 	window = win;
+	this->keymap_name = keymap_name;
+	this->max_width = max_width;
 	set_halign(Gtk::Align::CENTER);
 
+	load();
+}
+
+void layout::load() {
 	// TODO: Clean this up
+	std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
+	layout_map["full"] = keymap_desktop;
+	layout_map["mobile"] = keymap_mobile;
+	layout_map["mobile_numbers"] = keymap_mobile_numbers;
+
+	keymap = layout_map[keymap_name];
+
 	// Dynamic scaling
 	auto largest_vec_it = std::max_element(
 		keymap.begin(), keymap.end(),
@@ -51,7 +65,7 @@ layout::layout(sysboard *win, std::vector<std::vector<std::string>> keymap, cons
 
 			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
 			kbd_key->set_focusable(false);
-			kbd_key->set_size_request(btn_size * multiplier, btn_size * win->config_main.height_multiplier);
+			kbd_key->set_size_request(btn_size * multiplier, btn_size * window->config_main.height_multiplier);
 
 			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
 			kbd_key->add_controller(gesture_click);
@@ -120,5 +134,21 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	else {
 		style->remove_class("pressed");
 		window->press_key(kbd_key->code, 0);
+	}
+
+	// Handle special keys
+	if (!pressed && kbd_key->code == 0) {
+		if (kbd_key->label == "123")
+			keymap_name = "mobile_numbers";
+
+		else if (kbd_key->label == "abc")
+			keymap_name = "mobile";
+
+		// Cleanup before loading the new layout
+		auto children = get_children();
+		for (auto& child : children)
+			remove(*child);
+
+		load();
 	}
 }
