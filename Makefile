@@ -16,6 +16,15 @@ PROTO_HDRS = $(patsubst proto/%.xml, src/%.h, $(PROTOS))
 PROTO_SRCS = $(patsubst proto/%.xml, src/%.c, $(PROTOS))
 PROTO_OBJS = $(PROTO_SRCS:.c=.o)
 
+JOB_COUNT := $(EXEC) $(LIB) $(OBJS) $(PROTO_HDRS) $(PROTO_SRCS) $(PROTO_OBJS) src/os-compatibility.o
+JOBS_DONE := $(shell ls -l $(JOB_COUNT) 2> /dev/null | wc -l)
+
+define progress
+	$(eval JOBS_DONE := $(shell echo $$(($(JOBS_DONE) + 1))))
+	@printf "[$(JOBS_DONE)/$(shell echo $(JOB_COUNT) | wc -w)] %s %s\n" $(1) $(2)
+endef
+
+
 all: $(EXEC) $(LIB)
 
 install: $(all)
@@ -24,16 +33,19 @@ install: $(all)
 	install $(LIB) $(DESTDIR)/lib/$(LIB)
 
 clean:
-	rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o
+	@echo "Cleaning up"
+	@rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o
 
 $(EXEC): src/main.o
-	$(CXX) -o $(EXEC) \
+	$(call progress, Linking $@)
+	@$(CXX) -o $(EXEC) \
 	src/main.o \
 	$(CXXFLAGS) \
 	$(shell pkg-config --libs gtkmm-4.0 gtk4-layer-shell-0)
 
 $(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
-	$(CXX) -o $(LIB) \
+	$(call progress, Linking $@)
+	@$(CXX) -o $(LIB) \
 	$(filter-out src/main.o, $(OBJS)) \
 	$(PROTO_OBJS) \
 	src/os-compatibility.o \
@@ -42,15 +54,23 @@ $(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	-shared
 
 %.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@ \
+	$(call progress, Compiling $@)
+	@$(CXX) $(CFLAGS) -c $< -o $@ \
 	$(CXXFLAGS)
 
+%.o: %.c
+	$(call progress, Compiling $@)
+	@$(CC) -c $< -o $@ $(CFLAGS)
+
 src/os-compatibility.o: src/os-compatibility.c
-	$(CC) -c src/os-compatibility.c \
+	$(call progress, Compiling $@)
+	@$(CC) -c src/os-compatibility.c \
 		-o src/os-compatibility.o
 
 $(PROTO_HDRS): src/%.h : proto/%.xml
-	wayland-scanner client-header $< $@
+	$(call progress, Creating $@)
+	@wayland-scanner client-header $< $@
 
 $(PROTO_SRCS): src/%.c : proto/%.xml
-	wayland-scanner public-code $< $@
+	$(call progress, Creating $@)
+	@wayland-scanner public-code $< $@
