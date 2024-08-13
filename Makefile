@@ -34,9 +34,9 @@ install: $(all)
 
 clean:
 	@echo "Cleaning up"
-	@rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o
+	@rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o src/git_info.hpp
 
-$(EXEC): src/main.o
+$(EXEC): src/git_info.hpp src/main.o
 	$(call progress, Linking $@)
 	@$(CXX) -o $(EXEC) \
 	src/main.o \
@@ -74,3 +74,11 @@ $(PROTO_HDRS): src/%.h : proto/%.xml
 $(PROTO_SRCS): src/%.c : proto/%.xml
 	$(call progress, Creating $@)
 	@wayland-scanner public-code $< $@
+
+src/git_info.hpp:
+	$(call progress, Creating $@)
+	@commit_hash=$$(git rev-parse HEAD); \
+	commit_date=$$(git show -s --format=%cd --date=short $$commit_hash); \
+	commit_message=$$(git show -s --format=%s $$commit_hash); \
+	echo "#define GIT_COMMIT_MESSAGE \"$$commit_message\"" > src/git_info.hpp; \
+	echo "#define GIT_COMMIT_DATE \"$$commit_date\"" >> src/git_info.hpp
