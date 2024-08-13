@@ -1,4 +1,5 @@
 #include "main.hpp"
+#include "config_parser.hpp"
 #include "git_info.hpp"
 
 #include <gtkmm/application.h>
@@ -27,6 +28,23 @@ void load_libsysboard() {
 }
 
 int main(int argc, char *argv[]) {
+
+	config_parser config(std::string(getenv("HOME")) + "/.config/sys64/board/config.conf");
+
+	if (config.available) {
+		std::string cfg_margin = config.get_value("main", "margin");
+		if (cfg_margin != "empty")
+			config_main.margin = std::stoi(cfg_margin);
+
+		std::string cfg_height_multiplier = config.get_value("main", "height-multiplier");
+		if (cfg_height_multiplier != "empty")
+			config_main.height_multiplier = std::stod(cfg_height_multiplier);
+
+		std::string cfg_layout = config.get_value("main", "layout");
+		if (cfg_layout != "empty")
+			config_main.layout = cfg_layout;
+	}
+
 	while (true) {
 		switch(getopt(argc, argv, "m:dH:dl:dvh")) {
 			case 'm':
