@@ -16,7 +16,7 @@ PROTO_HDRS = $(patsubst proto/%.xml, src/%.h, $(PROTOS))
 PROTO_SRCS = $(patsubst proto/%.xml, src/%.c, $(PROTOS))
 PROTO_OBJS = $(PROTO_SRCS:.c=.o)
 
-JOB_COUNT := $(EXEC) $(LIB) $(OBJS) $(PROTO_HDRS) $(PROTO_SRCS) $(PROTO_OBJS) src/os-compatibility.o
+JOB_COUNT := $(EXEC) $(LIB) $(OBJS) $(PROTO_HDRS) $(PROTO_SRCS) $(PROTO_OBJS) src/os-compatibility.o src/git_info.hpp
 JOBS_DONE := $(shell ls -l $(JOB_COUNT) 2> /dev/null | wc -l)
 
 define progress
@@ -36,17 +36,18 @@ clean:
 	@echo "Cleaning up"
 	@rm $(EXEC) $(LIB) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o src/git_info.hpp
 
-$(EXEC): src/git_info.hpp src/main.o
+$(EXEC): src/git_info.hpp src/main.o src/config_parser.o
 	$(call progress, Linking $@)
 	@$(CXX) -o $(EXEC) \
 	src/main.o \
+	src/config_parser.o \
 	$(CXXFLAGS) \
 	$(shell pkg-config --libs gtkmm-4.0 gtk4-layer-shell-0)
 
 $(LIB): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
 	$(call progress, Linking $@)
 	@$(CXX) -o $(LIB) \
-	$(filter-out src/main.o, $(OBJS)) \
+	$(filter-out src/main.o src/config_parser.o, $(OBJS)) \
 	$(PROTO_OBJS) \
 	src/os-compatibility.o \
 	$(CXXFLAGS) \
