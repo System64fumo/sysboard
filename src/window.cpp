@@ -3,6 +3,7 @@
 #include "css.hpp"
 
 #include <gtk4-layer-shell.h>
+#include <glibmm/main.h>
 
 sysboard::sysboard(const config_board &cfg) {
 	config_main = cfg;
@@ -41,8 +42,29 @@ void sysboard::load_layout() {
 	layout_board->set_margin(config_main.margin);
 }
 
+void sysboard::handle_signal(const int &signum) {
+	Glib::signal_idle().connect([this, signum]() {
+		if (signum == 10) { // Show
+			manual_mode = true;
+			show();
+		}
+		else if (signum == 12) { // Hide
+			manual_mode = false;
+			hide();
+		}
+		if (signum == 34) { // Toggle
+			set_visible(!manual_mode);
+			manual_mode = get_visible();
+		}
+		return false;
+	});
+}
+
 extern "C" {
 	sysboard *sysboard_create(const config_board &cfg) {
 		return new sysboard(cfg);
+	}
+	void sysboard_signal(sysboard *window, int signal) {
+		window->handle_signal(signal);
 	}
 }

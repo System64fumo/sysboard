@@ -4,6 +4,10 @@
 #include <iostream>
 #include <dlfcn.h>
 
+void handle_signal(int signum) {
+	sysboard_handle_signal_ptr(window, signum);
+}
+
 void load_libsysboard() {
 	void* handle = dlopen("libsysboard.so", RTLD_LAZY);
 	if (!handle) {
@@ -12,8 +16,9 @@ void load_libsysboard() {
 	}
 
 	sysboard_create_ptr = (sysboard_create_func)dlsym(handle, "sysboard_create");
+	sysboard_handle_signal_ptr = (sysboard_handle_signal_func)dlsym(handle, "sysboard_signal");
 
-	if (!sysboard_create_ptr) {
+	if (!sysboard_create_ptr || !sysboard_handle_signal_ptr) {
 		std::cerr << "Cannot load symbols: " << dlerror() << '\n';
 		dlclose(handle);
 		exit(1);
@@ -57,8 +62,13 @@ int main(int argc, char *argv[]) {
 	app->hold();
 
 	load_libsysboard();
-	sysboard *window = sysboard_create_ptr(config_main);
+	window = sysboard_create_ptr(config_main);
 	(void)window; // This is to avoid the unused variable warning
+
+	// Catch signals
+	signal(SIGUSR1, handle_signal);
+	signal(SIGUSR2, handle_signal);
+	signal(SIGRTMIN, handle_signal);
 
 	return app->run();
 }

@@ -31,12 +31,14 @@ static wl_registry_listener registry_listener = {
 
 static void input_method_activate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
-	self->show();
+	if (!self->manual_mode)
+		self->show();
 }
 
 static void input_method_deactivate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
-	self->hide();
+	if (!self->manual_mode)
+		self->hide();
 }
 
 static void input_method_surrounding_text(void *data,
@@ -54,7 +56,11 @@ static void input_method_text_change_cause(void *data,
 static void input_method_content_type(void *data,
 				struct zwp_input_method_v2 *zwp_input_method_v2,
 				uint32_t hint,
-				uint32_t purpose) {}
+				uint32_t purpose) {
+	auto self = static_cast<sysboard*>(data);
+	if (purpose == 9) // Pin
+		self->hide();
+}
 
 static void input_method_done(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
 	auto wl_display = wl_display_connect(NULL);
