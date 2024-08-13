@@ -1,4 +1,5 @@
 #include "main.hpp"
+#include "git_info.hpp"
 
 #include <gtkmm/application.h>
 #include <iostream>
@@ -27,7 +28,7 @@ void load_libsysboard() {
 
 int main(int argc, char *argv[]) {
 	while (true) {
-		switch(getopt(argc, argv, "m:dH:dl:dh")) {
+		switch(getopt(argc, argv, "m:dH:dl:dvh")) {
 			case 'm':
 				config_main.margin = std::stoi(optarg);
 				continue;
@@ -40,6 +41,11 @@ int main(int argc, char *argv[]) {
 				config_main.layout = optarg;
 				continue;
 
+			case 'v':
+				std::cout << "Commit: " << GIT_COMMIT_MESSAGE << std::endl;
+				std::cout << "Date: " << GIT_COMMIT_DATE << std::endl;
+				return 0;
+
 			case 'h':
 			default :
 				std::cout << "usage:" << std::endl;
@@ -48,6 +54,7 @@ int main(int argc, char *argv[]) {
 				std::cout << "  -m	Set margin" << std::endl;
 				std::cout << "  -H	Set height multiplier" << std::endl;
 				std::cout << "  -l	Set layout" << std::endl;
+				std::cout << "  -v	Prints version info" << std::endl;
 				std::cout << "  -h	Show this help message" << std::endl;
 				return 0;
 

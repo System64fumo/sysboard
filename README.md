@@ -12,6 +12,7 @@ arguments:
   -m	Set margin
   -H	Set height multiplier
   -l	Set layout (full, mobile, mobile_numbers)
+  -v	Prints version info
 ```
 
 # Signals
