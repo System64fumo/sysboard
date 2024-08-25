@@ -3,6 +3,7 @@
 #include "git_info.hpp"
 
 #include <gtkmm/application.h>
+#include <filesystem>
 #include <iostream>
 #include <dlfcn.h>
 
@@ -29,7 +30,15 @@ void load_libsysboard() {
 
 int main(int argc, char *argv[]) {
 
-	config_parser config(std::string(getenv("HOME")) + "/.config/sys64/board/config.conf");
+	std::string config_path;
+	if (std::filesystem::exists(std::string(getenv("HOME")) + "/.config/sys64/board/config.conf"))
+		config_path = std::string(getenv("HOME")) + "/.config/sys64/board/config.conf";
+	else if (std::filesystem::exists("/usr/share/sys64/board/config.conf"))
+		config_path = "/usr/share/sys64/board/config.conf";
+	else
+		config_path = "/usr/local/share/sys64/board/config.conf";
+
+	config_parser config(config_path);
 
 	if (config.available) {
 		std::string cfg_margin = config.get_value("main", "margin");

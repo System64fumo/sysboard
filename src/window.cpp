@@ -3,6 +3,7 @@
 #include "css.hpp"
 
 #include <gtk4-layer-shell.h>
+#include <filesystem>
 #include <glibmm/main.h>
 
 sysboard::sysboard(const config_board &cfg) {
@@ -24,9 +25,14 @@ sysboard::sysboard(const config_board &cfg) {
 	load_layout();
 
 	// Load custom css
-	std::string home_dir = getenv("HOME");
-	std::string css_path = home_dir + "/.config/sys64/board/style.css";
-	css_loader css(css_path, this);
+	std::string style_path;
+	if (std::filesystem::exists(std::string(getenv("HOME")) + "/.config/sys64/board/style.css"))
+		style_path = std::string(getenv("HOME")) + "/.config/sys64/board/style.css";
+	else if (std::filesystem::exists("/usr/share/sys64/board/style.css"))
+		style_path = "/usr/share/sys64/board/style.css";
+	else
+		style_path = "/usr/local/share/sys64/board/style.css";
+	css_loader css(style_path, this);
 }
 
 void sysboard::load_layout() {
