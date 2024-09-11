@@ -4,7 +4,6 @@
 
 #include <gtkmm/application.h>
 #include <filesystem>
-#include <iostream>
 #include <dlfcn.h>
 
 void handle_signal(int signum) {
@@ -14,7 +13,7 @@ void handle_signal(int signum) {
 void load_libsysboard() {
 	void* handle = dlopen("libsysboard.so", RTLD_LAZY);
 	if (!handle) {
-		std::cerr << "Cannot open library: " << dlerror() << '\n';
+		std::fprintf(stderr, "Cannot open library: %s\n", dlerror());
 		exit(1);
 	}
 
@@ -22,7 +21,7 @@ void load_libsysboard() {
 	sysboard_handle_signal_ptr = (sysboard_handle_signal_func)dlsym(handle, "sysboard_signal");
 
 	if (!sysboard_create_ptr || !sysboard_handle_signal_ptr) {
-		std::cerr << "Cannot load symbols: " << dlerror() << '\n';
+		std::fprintf(stderr, "Cannot load symbols: %s\n", dlerror());
 		dlclose(handle);
 		exit(1);
 	}
@@ -69,20 +68,20 @@ int main(int argc, char *argv[]) {
 				continue;
 
 			case 'v':
-				std::cout << "Commit: " << GIT_COMMIT_MESSAGE << std::endl;
-				std::cout << "Date: " << GIT_COMMIT_DATE << std::endl;
+				std::printf("Commit: %s", GIT_COMMIT_MESSAGE);
+				std::printf("Date: %s", GIT_COMMIT_DATE);
 				return 0;
 
 			case 'h':
 			default :
-				std::cout << "usage:" << std::endl;
-				std::cout << "  sysboard [argument...]:\n" << std::endl;
-				std::cout << "arguments:" << std::endl;
-				std::cout << "  -m	Set margin" << std::endl;
-				std::cout << "  -H	Set height multiplier" << std::endl;
-				std::cout << "  -l	Set layout" << std::endl;
-				std::cout << "  -v	Prints version info" << std::endl;
-				std::cout << "  -h	Show this help message" << std::endl;
+				std::printf("usage:\n");;
+				std::printf("  sysboard [argument...]:\n\n");;
+				std::printf("arguments:\n");;
+				std::printf("  -m	Set margin\n");;
+				std::printf("  -H	Set height multiplier\n");;
+				std::printf("  -l	Set layout\n");;
+				std::printf("  -v	Prints version info\n");;
+				std::printf("  -h	Show this help message\n");;
 				return 0;
 
 			case -1:

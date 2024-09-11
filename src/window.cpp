@@ -54,19 +54,22 @@ void sysboard::handle_signal(const int &signum, const bool& manual) {
 	timeout_connection.disconnect();
 	timeout_connection = Glib::signal_timeout().connect([&, signum, manual]() {
 		Glib::signal_idle().connect([&, signum, manual]() {
+
+			// Reset all active modifiers to prevent weird behavior
 			set_modifier(0);
-			if (signum == 10) { // Show
+
+			if (signum == 10) // Show
 				show();
-			}
-			else if (signum == 12) { // Hide
+
+			else if (signum == 12) // Hide
 				hide();
-			}
-			if (signum == 34) { // Toggle
+
+			else if (signum == 34) // Toggle
 				set_visible(!manual_mode);
-				manual_mode = get_visible();
-			}
+
 			if (manual)
 				manual_mode = get_visible();
+
 			return false;
 		});
 		return false;
