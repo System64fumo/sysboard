@@ -48,23 +48,29 @@ void sysboard::load_layout() {
 	layout_board->set_margin(config_main.margin);
 }
 
-void sysboard::handle_signal(const int &signum) {
-	Glib::signal_idle().connect([this, signum]() {
-		set_modifier(0);
-		if (signum == 10) { // Show
-			manual_mode = true;
-			show();
-		}
-		else if (signum == 12) { // Hide
-			manual_mode = false;
-			hide();
-		}
-		if (signum == 34) { // Toggle
-			set_visible(!manual_mode);
-			manual_mode = get_visible();
-		}
+void sysboard::handle_signal(const int &signum, const bool& manual) {
+	// Timeout exists to prevent a ping pong effect
+	// Currently it's set to 250ms altho 100ms also works well enough
+	timeout_connection.disconnect();
+	timeout_connection = Glib::signal_timeout().connect([&, signum, manual]() {
+		Glib::signal_idle().connect([&, signum, manual]() {
+			set_modifier(0);
+			if (signum == 10) { // Show
+				show();
+			}
+			else if (signum == 12) { // Hide
+				hide();
+			}
+			if (signum == 34) { // Toggle
+				set_visible(!manual_mode);
+				manual_mode = get_visible();
+			}
+			if (manual)
+				manual_mode = get_visible();
+			return false;
+		});
 		return false;
-	});
+	}, 250);
 }
 
 extern "C" {
@@ -72,6 +78,6 @@ extern "C" {
 		return new sysboard(cfg);
 	}
 	void sysboard_signal(sysboard *window, int signal) {
-		window->handle_signal(signal);
+		window->handle_signal(signal, true);
 	}
 }
