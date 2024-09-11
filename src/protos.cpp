@@ -32,13 +32,13 @@ static wl_registry_listener registry_listener = {
 static void input_method_activate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
 	if (!self->manual_mode)
-		self->show();
+		self->handle_signal(10);
 }
 
 static void input_method_deactivate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
 	if (!self->manual_mode)
-		self->hide();
+		self->handle_signal(12);
 }
 
 static void input_method_surrounding_text(void *data,
