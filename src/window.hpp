@@ -15,7 +15,7 @@ class sysboard : public Gtk::Window {
 		void press_key(const int &keycode, const int &state);
 		void set_modifier(const int &mod);
 		void load_layout();
-		void handle_signal(const int &signum);
+		void handle_signal(const int &signum, const bool& manual = false);
 
 		zwp_virtual_keyboard_manager_v1 *keyboard_manager;
 		zwp_virtual_keyboard_v1 *virtual_keyboard;
@@ -24,6 +24,7 @@ class sysboard : public Gtk::Window {
 		zwp_input_method_v2 *input_method;
 
 	private:
+		sigc::connection timeout_connection;
 		GdkDisplay *gdk_display;
 		GdkSeat *gdk_seat;
 		wl_seat *seat;
