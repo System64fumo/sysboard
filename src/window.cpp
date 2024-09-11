@@ -50,6 +50,7 @@ void sysboard::load_layout() {
 
 void sysboard::handle_signal(const int &signum) {
 	Glib::signal_idle().connect([this, signum]() {
+		set_modifier(0);
 		if (signum == 10) { // Show
 			manual_mode = true;
 			show();
