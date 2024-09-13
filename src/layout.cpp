@@ -143,6 +143,24 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 		window->press_key(kbd_key->code, 0);
 	}
 
+	// Reset modifiers on press (e.g: Undo shift after first letter)
+	// TODO: Add a double tap shift to enable capslock
+	// TODO: Add option to enable/disable this feature
+	/*if (mods != 0) {
+		mods = 0;
+		window->set_modifier(mods);
+
+		// Remove uppercase
+		for (auto& row : get_children()) {
+			for (auto& row_child : row->get_children()) {
+				key* kbd_button = static_cast<key*>(row_child);
+				kbd_button->set_shift(false);
+				auto kbd_style = kbd_button->get_style_context();
+				kbd_style->remove_class("toggled");
+			}
+		}
+	}*/
+
 	// Handle special keys
 	if (!pressed && kbd_key->code == 0) {
 		if (kbd_key->label == "123")
