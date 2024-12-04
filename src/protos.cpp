@@ -6,8 +6,8 @@
 #include <sys/mman.h>
 #include <cstring>
 
-static void registry_handler(void *data, struct wl_registry *registry,
-							 uint32_t id, const char *interface, uint32_t version) {
+static void registry_handler(void* data, struct wl_registry* registry,
+	uint32_t id, const char* interface, uint32_t version) {
 
 	auto self = static_cast<sysboard*>(data);
 
@@ -29,29 +29,27 @@ static wl_registry_listener registry_listener = {
 	&registry_handler
 };
 
-static void input_method_activate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
+static void input_method_activate(void* data, struct zwp_input_method_v2* zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
 	if (!self->manual_mode)
 		self->handle_signal(10);
 }
 
-static void input_method_deactivate(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
+static void input_method_deactivate(void* data, struct zwp_input_method_v2* zwp_input_method_v2) {
 	auto self = static_cast<sysboard*>(data);
 	if (!self->manual_mode)
 		self->handle_signal(12);
 }
 
-static void input_method_surrounding_text(void *data,
-				struct zwp_input_method_v2 *zwp_input_method_v2,
-				const char *text,
-				uint32_t cursor,
-				uint32_t anchor) {
+static void input_method_surrounding_text(void* data,
+	struct zwp_input_method_v2* zwp_input_method_v2,
+	const char* text, uint32_t cursor, uint32_t anchor) {
 	// I could probably use this for autocomplete/autocorrect
 }
 
 static void input_method_text_change_cause(void *data,
-				struct zwp_input_method_v2 *zwp_input_method_v2,
-				uint32_t cause) {}
+	struct zwp_input_method_v2 *zwp_input_method_v2,
+	uint32_t cause) {}
 
 static void input_method_content_type(void *data,
 				struct zwp_input_method_v2 *zwp_input_method_v2,

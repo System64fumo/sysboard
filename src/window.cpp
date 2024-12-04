@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <glibmm/main.h>
 
-sysboard::sysboard(const config_board &cfg) {
+sysboard::sysboard(const config_board& cfg) {
 	config_main = cfg;
 
 	// Layer shell stuff
@@ -77,10 +77,10 @@ void sysboard::handle_signal(const int &signum, const bool& manual) {
 }
 
 extern "C" {
-	sysboard *sysboard_create(const config_board &cfg) {
+	sysboard* sysboard_create(const config_board& cfg) {
 		return new sysboard(cfg);
 	}
-	void sysboard_signal(sysboard *window, int signal) {
+	void sysboard_signal(sysboard* window, int signal) {
 		window->handle_signal(signal, true);
 	}
 }

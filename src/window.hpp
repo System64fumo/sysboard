@@ -6,22 +6,19 @@
 
 class sysboard : public Gtk::Window {
 	public:
-		sysboard(const config_board &cfg);
+		sysboard(const config_board&);
 		config_board config_main;
 		bool manual_mode = false;
 
+		zwp_virtual_keyboard_manager_v1* keyboard_manager;
+		zwp_input_method_manager_v2* input_method_manager;
+
 		void create_virtual_keyboard();
 		void create_input_manager();
-		void press_key(const int &keycode, const int &state);
-		void set_modifier(const int &mod);
+		void press_key(const int&, const int&);
+		void set_modifier(const int&);
 		void load_layout();
-		void handle_signal(const int &signum, const bool& manual = false);
-
-		zwp_virtual_keyboard_manager_v1 *keyboard_manager;
-		zwp_virtual_keyboard_v1 *virtual_keyboard;
-
-		zwp_input_method_manager_v2 *input_method_manager;
-		zwp_input_method_v2 *input_method;
+		void handle_signal(const int&, const bool& manual = false);
 
 	private:
 		sigc::connection timeout_connection;
@@ -29,11 +26,14 @@ class sysboard : public Gtk::Window {
 		GdkSeat *gdk_seat;
 		wl_seat *seat;
 
+		zwp_virtual_keyboard_v1* virtual_keyboard;
+		zwp_input_method_v2* input_method;
+
 		void initialize_protos();
 };
 
 extern "C" {
-	sysboard *sysboard_create(const config_board &cfg);
-	void sysboard_signal(sysboard *window, int signal);
+	sysboard *sysboard_create(const config_board&);
+	void sysboard_signal(sysboard*, int);
 }
 

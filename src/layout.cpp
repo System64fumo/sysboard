@@ -1,5 +1,7 @@
 #include "layout.hpp"
 #include "layouts.hpp"
+#include "window.hpp"
+#include "key.hpp"
 
 #include <algorithm>
 #include <bitset>
