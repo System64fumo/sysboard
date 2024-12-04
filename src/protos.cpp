@@ -59,7 +59,7 @@ static void input_method_content_type(void *data,
 				uint32_t purpose) {
 	auto self = static_cast<sysboard*>(data);
 	if (purpose == 9) // Pin
-		self->hide();
+		self->handle_signal(12);
 }
 
 static void input_method_done(void *data, struct zwp_input_method_v2 *zwp_input_method_v2) {
