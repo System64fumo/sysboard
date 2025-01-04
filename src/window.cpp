@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <glibmm/main.h>
 
-sysboard::sysboard(const config_board& cfg) {
+sysboard::sysboard(const std::map<std::string, std::map<std::string, std::string>>& cfg) {
 	config_main = cfg;
 
 	// Layer shell stuff
@@ -41,11 +41,11 @@ void sysboard::load_layout() {
 
 	GdkRectangle geometry;
 	gdk_monitor_get_geometry(monitor, &geometry);
-	int max_width = geometry.width - (config_main.margin * 2);
+	int max_width = geometry.width - (stoi(config_main["main"]["margin"]) * 2);
 
-	layout *layout_board = Gtk::make_managed<layout>(this, config_main.layout, max_width);
+	layout *layout_board = Gtk::make_managed<layout>(this, config_main["main"]["layout"], max_width);
 	set_child(*layout_board);
-	layout_board->set_margin(config_main.margin);
+	layout_board->set_margin(stoi(config_main["main"]["margin"]));
 }
 
 void sysboard::handle_signal(const int &signum, const bool& manual) {
@@ -77,7 +77,7 @@ void sysboard::handle_signal(const int &signum, const bool& manual) {
 }
 
 extern "C" {
-	sysboard* sysboard_create(const config_board& cfg) {
+	sysboard* sysboard_create(const std::map<std::string, std::map<std::string, std::string>>& cfg) {
 		return new sysboard(cfg);
 	}
 	void sysboard_signal(sysboard* window, int signal) {

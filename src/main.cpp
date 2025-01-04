@@ -28,43 +28,56 @@ void load_libsysboard() {
 }
 
 int main(int argc, char *argv[]) {
-
+	// Load the config
 	std::string config_path;
-	if (std::filesystem::exists(std::string(getenv("HOME")) + "/.config/sys64/board/config.conf"))
-		config_path = std::string(getenv("HOME")) + "/.config/sys64/board/config.conf";
-	else if (std::filesystem::exists("/usr/share/sys64/board/config.conf"))
+	std::map<std::string, std::map<std::string, std::string>> config;
+	std::map<std::string, std::map<std::string, std::string>> config_usr;
+
+	bool cfg_sys = std::filesystem::exists("/usr/share/sys64/board/config.conf");
+	bool cfg_sys_local = std::filesystem::exists("/usr/local/share/sys64/board/config.conf");
+	bool cfg_usr = std::filesystem::exists(std::string(getenv("HOME")) + "/.config/sys64/board/config.conf");
+
+	// Load default config
+	if (cfg_sys)
 		config_path = "/usr/share/sys64/board/config.conf";
-	else
+	else if (cfg_sys_local)
 		config_path = "/usr/local/share/sys64/board/config.conf";
+	else
+		std::fprintf(stderr, "No default config found, Things will get funky!\n");
 
-	config_parser config(config_path);
+	config = config_parser(config_path).data;
 
-	if (config.available) {
-		std::string cfg_margin = config.get_value("main", "margin");
-		if (cfg_margin != "empty")
-			config_main.margin = std::stoi(cfg_margin);
+	// Load user config
+	if (cfg_usr)
+		config_path = std::string(getenv("HOME")) + "/.config/sys64/board/config.conf";
+	else
+		std::fprintf(stderr, "No user config found\n");
 
-		std::string cfg_height_multiplier = config.get_value("main", "height-multiplier");
-		if (cfg_height_multiplier != "empty")
-			config_main.height_multiplier = std::stod(cfg_height_multiplier);
+	config_usr = config_parser(config_path).data;
 
-		std::string cfg_layout = config.get_value("main", "layout");
-		if (cfg_layout != "empty")
-			config_main.layout = cfg_layout;
+	// Merge configs
+	for (const auto& [key, nested_map] : config_usr)
+		for (const auto& [inner_key, inner_value] : nested_map)
+			config[key][inner_key] = inner_value;
+
+	// Sanity check
+	if (!(cfg_sys || cfg_sys_local || cfg_usr)) {
+		std::fprintf(stderr, "No config available, Something ain't right here.");
+		return 1;
 	}
 
 	while (true) {
 		switch(getopt(argc, argv, "m:dH:dl:dvh")) {
 			case 'm':
-				config_main.margin = std::stoi(optarg);
+				config["main"]["margin"] = optarg;
 				continue;
 
 			case 'H':
-				config_main.height_multiplier = std::stod(optarg);
+				config["main"]["height-multiplier"] = optarg;
 				continue;
 
 			case 'l':
-				config_main.layout = optarg;
+				config["main"]["layout"] = optarg;
 				continue;
 
 			case 'v':
@@ -95,7 +108,7 @@ int main(int argc, char *argv[]) {
 	app->hold();
 
 	load_libsysboard();
-	window = sysboard_create_ptr(config_main);
+	window = sysboard_create_ptr(config);
 	(void)window; // This is to avoid the unused variable warning
 
 	// Catch signals

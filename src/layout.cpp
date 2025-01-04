@@ -70,7 +70,7 @@ void layout::load() {
 
 			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
 			kbd_key->set_focusable(false);
-			kbd_key->set_size_request(btn_size * multiplier, btn_size * window->config_main.height_multiplier);
+			kbd_key->set_size_request(btn_size * multiplier, btn_size * std::stod(window->config_main["main"]["height-multiplier"]));
 
 			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
 			kbd_key->add_controller(gesture_click);

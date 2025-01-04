@@ -1,13 +1,13 @@
 #pragma once
+#include <map>
 #include <gtkmm/window.h>
 #include "virtual-keyboard-unstable-v1.h"
 #include "input-method-unstable-v2.h"
-#include "config.hpp"
 
 class sysboard : public Gtk::Window {
 	public:
-		sysboard(const config_board&);
-		config_board config_main;
+		sysboard(const std::map<std::string, std::map<std::string, std::string>>&);
+		std::map<std::string, std::map<std::string, std::string>> config_main;
 		bool manual_mode = false;
 
 		zwp_virtual_keyboard_manager_v1* keyboard_manager;
@@ -33,7 +33,7 @@ class sysboard : public Gtk::Window {
 };
 
 extern "C" {
-	sysboard *sysboard_create(const config_board&);
+	sysboard *sysboard_create(const std::map<std::string, std::map<std::string, std::string>>&);
 	void sysboard_signal(sysboard*, int);
 }
 
