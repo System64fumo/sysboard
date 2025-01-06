@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	while (true) {
-		switch(getopt(argc, argv, "m:dH:dl:dvh")) {
+		switch(getopt(argc, argv, "m:sH:sl:svh")) {
 			case 'm':
 				config["main"]["margin"] = optarg;
 				continue;
