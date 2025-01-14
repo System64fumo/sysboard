@@ -2,6 +2,8 @@
 sysboard is a simple virtual keyboard (On screen keyboard) for wayland written in gtkmm 4<br>
 ![preview](https://github.com/System64fumo/sysboard/blob/main/preview.png "preview")
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/sysboard.svg)](https://repology.org/project/sysboard/versions)
+
 # Configuration
 sysboard can be configured in 3 ways<br>
 1: By changing config.hpp and recompiling (Suckless style)<br>
