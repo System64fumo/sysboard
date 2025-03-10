@@ -1,13 +1,13 @@
 BINS = sysboard
 LIBS = libsysboard.so
-PKGS = gtkmm-4.0 gtk4-layer-shell-0	
+PKGS = gtkmm-4.0 gtk4-layer-shell-0
 SRCS = $(wildcard src/*.cpp)
-OBJS = $(SRCS:.cpp=.o)
 
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib
 DATADIR ?= $(PREFIX)/share
+BUILDDIR = build
 
 CXXFLAGS += -Os -s -Wall -flto=auto -fno-exceptions -fPIC
 LDFLAGS += -Wl,-O1,--as-needed,-z,now,-z,pack-relative-relocs
@@ -15,12 +15,14 @@ LDFLAGS += -Wl,-O1,--as-needed,-z,now,-z,pack-relative-relocs
 CXXFLAGS += $(shell pkg-config --cflags $(PKGS))
 LDFLAGS += $(shell pkg-config --libs $(PKGS))
 
+OBJS = $(patsubst src/%.cpp, $(BUILDDIR)/%.o, $(SRCS))
+
 PROTOS = $(wildcard proto/*.xml)
 PROTO_HDRS = $(patsubst proto/%.xml, src/%.h, $(PROTOS))
 PROTO_SRCS = $(patsubst proto/%.xml, src/%.c, $(PROTOS))
-PROTO_OBJS = $(PROTO_SRCS:.c=.o)
+PROTO_OBJS = $(patsubst src/%.c, $(BUILDDIR)/%.o, $(PROTO_SRCS))
 
-JOB_COUNT := $(EXEC) $(LIB) $(OBJS) $(PROTO_HDRS) $(PROTO_SRCS) $(PROTO_OBJS) src/os-compatibility.o src/git_info.hpp
+JOB_COUNT := $(BINS) $(LIBS) $(OBJS) $(PROTO_HDRS) $(PROTO_SRCS) $(PROTO_OBJS) $(BUILDDIR)/os-compatibility.o src/git_info.hpp
 JOBS_DONE := $(shell ls -l $(JOB_COUNT) 2> /dev/null | wc -l)
 
 define progress
@@ -28,50 +30,51 @@ define progress
 	@printf "[$(JOBS_DONE)/$(shell echo $(JOB_COUNT) | wc -w)] %s %s\n" $(1) $(2)
 endef
 
-
 all: $(BINS) $(LIBS)
 
-install: $(all)
+install: all
 	@echo "Installing..."
-	@install -D -t $(DESTDIR)$(BINDIR) $(BINS)
-	@install -D -t $(DESTDIR)$(LIBDIR) $(LIBS)
+	@install -D -t $(DESTDIR)$(BINDIR) $(BUILDDIR)/$(BINS)
+	@install -D -t $(DESTDIR)$(LIBDIR) $(BUILDDIR)/$(LIBS)
 	@install -D -t $(DESTDIR)$(DATADIR)/sys64/board config.conf style.css
 
 clean:
 	@echo "Cleaning up"
-	@rm $(BINS) $(LIBS) $(OBJS) $(PROTO_OBJS) $(PROTO_HDRS) $(PROTO_SRCS) src/os-compatibility.o src/git_info.hpp
+	@rm -rf $(BUILDDIR) $(BINS) $(LIBS) $(PROTO_HDRS) $(PROTO_SRCS) src/git_info.hpp
 
-$(BINS): src/git_info.hpp src/main.o src/config_parser.o
+$(BINS): src/git_info.hpp $(BUILDDIR)/main.o $(BUILDDIR)/config_parser.o
 	$(call progress, Linking $@)
-	@$(CXX) -o $(BINS) \
-	src/main.o \
-	src/config_parser.o \
+	@$(CXX) -o $(BUILDDIR)/$@ \
+	$(BUILDDIR)/main.o \
+	$(BUILDDIR)/config_parser.o \
 	$(CXXFLAGS) \
 	$(shell pkg-config --libs gtkmm-4.0 gtk4-layer-shell-0)
 
-$(LIBS): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) src/os-compatibility.o
+$(LIBS): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) $(BUILDDIR)/os-compatibility.o
 	$(call progress, Linking $@)
-	@$(CXX) -o $(LIBS) \
-	$(filter-out src/main.o src/config_parser.o, $(OBJS)) \
+	@$(CXX) -o $(BUILDDIR)/$@ \
+	$(filter-out $(BUILDDIR)/main.o $(BUILDDIR)/config_parser.o, $(OBJS)) \
 	$(PROTO_OBJS) \
-	src/os-compatibility.o \
+	$(BUILDDIR)/os-compatibility.o \
 	$(CXXFLAGS) \
 	$(LDFLAGS) \
 	-shared
 
-%.o: %.cpp
+$(BUILDDIR)/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
 	$(call progress, Compiling $@)
-	@$(CXX) $(CFLAGS) -c $< -o $@ \
+	@$(CXX) -c $< -o $@ \
 	$(CXXFLAGS)
 
-%.o: %.c
+$(BUILDDIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
 	$(call progress, Compiling $@)
 	@$(CC) -c $< -o $@ $(CFLAGS)
 
-src/os-compatibility.o: src/os-compatibility.c
+$(BUILDDIR)/os-compatibility.o: src/os-compatibility.c
+	@mkdir -p $(dir $@)
 	$(call progress, Compiling $@)
-	@$(CC) -c src/os-compatibility.c \
-		-o src/os-compatibility.o
+	@$(CC) -c $< -o $@ $(CFLAGS)
 
 $(PROTO_HDRS): src/%.h : proto/%.xml
 	$(call progress, Creating $@)
