@@ -10,7 +10,7 @@ DATADIR ?= $(PREFIX)/share
 BUILDDIR = build
 
 CXXFLAGS += -Os -s -Wall -flto=auto -fno-exceptions -fPIC
-LDFLAGS += -Wl,-O1,--as-needed,-z,now,-z,pack-relative-relocs
+LDFLAGS += -Wl,-O1,--no-as-needed,-z,now,-z,pack-relative-relocs
 
 CXXFLAGS += $(shell pkg-config --cflags $(PKGS))
 LDFLAGS += $(shell pkg-config --libs $(PKGS))
@@ -48,7 +48,7 @@ $(BINS): src/git_info.hpp $(BUILDDIR)/main.o $(BUILDDIR)/config_parser.o
 	$(BUILDDIR)/main.o \
 	$(BUILDDIR)/config_parser.o \
 	$(CXXFLAGS) \
-	$(shell pkg-config --libs gtkmm-4.0 gtk4-layer-shell-0)
+	$(LDFLAGS) -lwayland-client
 
 $(LIBS): $(PROTO_HDRS) $(PROTO_OBJS) $(OBJS) $(BUILDDIR)/os-compatibility.o
 	$(call progress, Linking $@)
