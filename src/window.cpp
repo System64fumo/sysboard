@@ -5,6 +5,7 @@
 #include <gtk4-layer-shell.h>
 #include <filesystem>
 #include <glibmm/main.h>
+#include <signal.h>
 
 sysboard::sysboard(const std::map<std::string, std::map<std::string, std::string>>& cfg) {
 	config_main = cfg;
@@ -58,13 +59,13 @@ void sysboard::handle_signal(const int &signum, const bool& manual) {
 			// Reset all active modifiers to prevent weird behavior
 			set_modifier(0);
 
-			if (signum == 10) // Show
+			if (signum == SIGUSR1) // Show
 				show();
 
-			else if (signum == 12) // Hide
+			else if (signum == SIGUSR2) // Hide
 				hide();
 
-			else if (signum == 34) // Toggle
+			else if (signum == SIGRTMIN) // Toggle
 				set_visible(!manual_mode);
 
 			if (manual)

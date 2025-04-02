@@ -20,9 +20,9 @@ arguments:
 # Signals
 While the keyboard can show up on it's own, Sometimes you might want to trigger it manually<br>
 You can send signals to show/hide the window<br>
-``pkill -10 sysboard`` to show<br>
-``pkill -12 sysboard`` to hide<br>
-``pkill -34 sysboard`` to toggle<br>
+``pkill -USR1 sysboard`` to show<br>
+``pkill -USR2 sysboard`` to hide<br>
+``pkill -RTMIN sysboard`` to toggle<br>
 Note: When triggered manually it will not hide on it's own<br>
 
 # Theming
