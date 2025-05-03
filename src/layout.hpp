@@ -1,6 +1,7 @@
 #pragma once
 #include <gtkmm/box.h>
 #include <gtkmm/gestureclick.h>
+#include <time.h>
 
 class sysboard;
 class key;
@@ -16,10 +17,14 @@ class layout : public Gtk::Box {
 
 		std::map<std::string, std::vector<std::vector<std::string>>> layout_map;
 		std::vector<std::vector<std::string>> keymap;
-		int btn_size = 0;
+		int btn_size;
 		std::map<int, int> mod_map;
-		int mods = 0;
+		int mods;
+		long last_shift_time;
+		bool shift_held;
+		bool shift_temp;
 
 		void load();
 		void handle_keycode(key*, const bool&);
+		long get_time_in_us();
 };
