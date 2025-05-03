@@ -18,7 +18,8 @@ layout::layout(sysboard *win, const std::string &keymap_name, const int &max_wid
 	layout_map["mobile_numbers"] = keymap_mobile_numbers;
 
 	// Modifiers
-	mod_map[42] = 1;	// Shift
+	mod_map[42] = 1;	// Left Shift
+	mod_map[54] = 1;	// Right Shift
 	mod_map[29] = 4;	// Ctrl
 	mod_map[56] = 8;	// Alt
 	mod_map[125] = 4;	// Meta
@@ -103,8 +104,43 @@ void layout::load() {
 
 void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	auto style = kbd_key->get_style_context();
+	bool is_shift = kbd_key->code == 42 || kbd_key->code == 54;
 
-	// Handle modifiers
+	if (is_shift && pressed) {
+		long current_time = get_time_in_us();
+		long time_diff = current_time - last_shift_time;
+		last_shift_time = current_time;
+
+		// Disable shift hold
+		if (shift_held) {
+			shift_held = false;
+			mods &= ~mod_map[kbd_key->code];
+			style->remove_class("toggled");
+		}
+		// Promote temp shift to shift hold
+		else if (shift_temp && time_diff < 500000) {
+			shift_temp = false;
+			shift_held = true;
+		}
+		// Enable temporary shift
+		else {
+			shift_temp = true;
+			mods |= mod_map[kbd_key->code];
+			style->add_class("toggled");
+		}
+
+		window->set_modifier(mods);
+
+		bool shift_active = mods & 1;
+		for (auto& row : get_children()) {
+			for (auto& row_child : row->get_children()) {
+				static_cast<key*>(row_child)->set_shift(shift_active);
+			}
+		}
+		return;
+	}
+
+	// Handle other modifiers
 	if (mod_map.find(kbd_key->code) != mod_map.end()) {
 		if (!pressed)
 			return;
@@ -122,20 +158,16 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 			window->press_key(kbd_key->code, 1);
 		}
 
-		std::bitset<8> bits(mods);
-		bool has_shift = bits[0];
-
-		// Set alternate (shift) labels
+		bool shift_active = mods & 1;
 		for (auto& row : get_children()) {
 			for (auto& row_child : row->get_children()) {
-				key* kbd_button = static_cast<key*>(row_child);
-				kbd_button->set_shift(has_shift);
+				static_cast<key*>(row_child)->set_shift(shift_active);
 			}
 		}
-
 		return;
 	}
 
+	// Normal key press/release
 	if (pressed) {
 		style->add_class("pressed");
 		window->press_key(kbd_key->code, 1);
@@ -145,41 +177,39 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 		window->press_key(kbd_key->code, 0);
 	}
 
-	// Reset modifiers on press (e.g: Undo shift after first letter)
-	// TODO: Add a double tap shift to enable capslock
-	// TODO: Add option to enable/disable this feature
-	/*if (mods != 0) {
+	// Clear temporary shift after one use
+	if (shift_temp && !shift_held) {
+		shift_temp = false;
 		mods = 0;
 		window->set_modifier(mods);
 
-		// Remove uppercase
 		for (auto& row : get_children()) {
 			for (auto& row_child : row->get_children()) {
 				key* kbd_button = static_cast<key*>(row_child);
 				kbd_button->set_shift(false);
-				auto kbd_style = kbd_button->get_style_context();
-				kbd_style->remove_class("toggled");
+				kbd_button->get_style_context()->remove_class("toggled");
 			}
 		}
-	}*/
+	}
 
-	// Handle special keys
+	// Handle layout switching (e.g. 123/abc key)
 	if (!pressed && kbd_key->code == 0) {
 		if (kbd_key->label == "123")
 			keymap_name = "mobile_numbers";
-
 		else if (kbd_key->label == "abc")
 			keymap_name = "mobile";
 
-		// Cleanup before loading the new layout
-		auto children = get_children();
-		for (auto& child : children)
+		for (auto& child : get_children())
 			remove(*child);
 
-		// Reset any currently active modifiers
 		mods = 0;
 		window->set_modifier(mods);
-
 		load();
 	}
+}
+
+long layout::get_time_in_us() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return (tv.tv_sec * 1000000 + tv.tv_usec);
 }
