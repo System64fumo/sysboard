@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <sys/time.h>
 
 layout::layout(sysboard *win, const std::string &keymap_name, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
 	window = win;
