@@ -9,6 +9,7 @@ class key;
 class layout : public Gtk::Box {
 	public:
 		layout(sysboard* win, const std::string&, const int&);
+		void handle_keycode(key*, const bool&);
 
 	private:
 		sysboard *window;
@@ -25,6 +26,5 @@ class layout : public Gtk::Box {
 		bool shift_temp;
 
 		void load();
-		void handle_keycode(key*, const bool&);
 		long get_time_in_us();
 };

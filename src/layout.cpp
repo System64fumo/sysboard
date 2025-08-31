@@ -104,6 +104,18 @@ void layout::load() {
 }
 
 void layout::handle_keycode(key *kbd_key, const bool &pressed) {
+	if (kbd_key == nullptr) {
+		keymap_name = window->config_main["main"]["layout"];
+		mods = 0;
+		window->set_modifier(mods);
+
+		for (auto& child : get_children())
+			remove(*child);
+
+		load();
+		return;
+	}
+
 	auto style = kbd_key->get_style_context();
 	bool is_shift = kbd_key->code == 42 || kbd_key->code == 54;
 

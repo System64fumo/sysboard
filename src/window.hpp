@@ -4,6 +4,8 @@
 #include "virtual-keyboard-unstable-v1.h"
 #include "input-method-unstable-v2.h"
 
+class layout;
+
 class sysboard : public Gtk::Window {
 	public:
 		sysboard(const std::map<std::string, std::map<std::string, std::string>>&);
@@ -28,6 +30,7 @@ class sysboard : public Gtk::Window {
 
 		zwp_virtual_keyboard_v1* virtual_keyboard;
 		zwp_input_method_v2* input_method;
+		layout *layout_board;
 
 		void initialize_protos();
 };

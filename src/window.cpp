@@ -44,7 +44,7 @@ void sysboard::load_layout() {
 	gdk_monitor_get_geometry(monitor, &geometry);
 	int max_width = geometry.width - (stoi(config_main["main"]["margin"]) * 2);
 
-	layout *layout_board = Gtk::make_managed<layout>(this, config_main["main"]["layout"], max_width);
+	layout_board = Gtk::make_managed<layout>(this, config_main["main"]["layout"], max_width);
 	set_child(*layout_board);
 	layout_board->set_margin(stoi(config_main["main"]["margin"]));
 }
@@ -59,17 +59,22 @@ void sysboard::handle_signal(const int &signum, const bool& manual) {
 			// Reset all active modifiers to prevent weird behavior
 			set_modifier(0);
 
-			if (signum == SIGUSR1) // Show
+			if (signum == SIGUSR1) { // Show
 				show();
+			}
 
-			else if (signum == SIGUSR2) // Hide
+			else if (signum == SIGUSR2) { // Hide
+				layout_board->handle_keycode(nullptr, false);
 				hide();
+			}
 
-			else if (signum == SIGRTMIN) // Toggle
+			else if (signum == SIGRTMIN) { // Toggle
 				set_visible(!manual_mode);
+			}
 
-			if (manual)
+			if (manual) {
 				manual_mode = get_visible();
+			}
 
 			return false;
 		});
