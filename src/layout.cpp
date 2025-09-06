@@ -9,6 +9,10 @@
 
 layout::layout(sysboard *win, const std::string &keymap_name, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
 	window = win;
+	mods = 0;
+	last_shift_time = 0;
+	shift_held = false;
+	shift_temp = false;
 	this->keymap_name = keymap_name;
 	this->max_width = max_width;
 	set_halign(Gtk::Align::CENTER);
@@ -30,6 +34,7 @@ layout::layout(sysboard *win, const std::string &keymap_name, const int &max_wid
 
 void layout::load() {
 	keymap = layout_map[keymap_name];
+	add_css_class(keymap_name);
 
 	// Dynamic scaling
 	auto largest_vec_it = std::max_element(
@@ -73,6 +78,9 @@ void layout::load() {
 			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
 			kbd_key->set_focusable(false);
 			kbd_key->set_size_request(btn_size * multiplier, btn_size * std::stod(window->config_main["main"]["height-multiplier"]));
+
+			// TODO: Add different handling for special keys
+			kbd_key->add_css_class("key-" + label);
 
 			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
 			kbd_key->add_controller(gesture_click);
@@ -119,27 +127,37 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	auto style = kbd_key->get_style_context();
 	bool is_shift = kbd_key->code == 42 || kbd_key->code == 54;
 
-	if (is_shift && pressed) {
-		long current_time = get_time_in_us();
-		long time_diff = current_time - last_shift_time;
-		last_shift_time = current_time;
+	if (is_shift) {
+		if (pressed) {
+			long current_time = get_time_in_us();
+			long time_diff = current_time - last_shift_time;
+			last_shift_time = current_time;
 
-		// Disable shift hold
-		if (shift_held) {
-			shift_held = false;
-			mods &= ~mod_map[kbd_key->code];
-			style->remove_class("toggled");
-		}
-		// Promote temp shift to shift hold
-		else if (shift_temp && time_diff < 500000) {
-			shift_temp = false;
-			shift_held = true;
-		}
-		// Enable temporary shift
-		else {
-			shift_temp = true;
-			mods |= mod_map[kbd_key->code];
-			style->add_class("toggled");
+			if (shift_held) {
+				// Release held shift
+				shift_held = false;
+				shift_temp = false;
+				mods &= ~mod_map[kbd_key->code];
+				style->remove_class("toggled");
+			}
+			else if (shift_temp && time_diff < 500000) {
+				// Double tap: promote temp shift to shift hold
+				shift_temp = false;
+				shift_held = true;
+				// Keep toggled class
+			}
+			else if (shift_temp) {
+				// Single press when already temp: untoggle
+				shift_temp = false;
+				mods &= ~mod_map[kbd_key->code];
+				style->remove_class("toggled");
+			}
+			else {
+				// First press: temporary shift
+				shift_temp = true;
+				mods |= mod_map[kbd_key->code];
+				style->add_class("toggled");
+			}
 		}
 
 		window->set_modifier(mods);
@@ -193,14 +211,17 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 	// Clear temporary shift after one use
 	if (shift_temp && !shift_held) {
 		shift_temp = false;
-		mods = 0;
+		mods &= ~1; // Only remove shift modifier, not all modifiers
 		window->set_modifier(mods);
 
 		for (auto& row : get_children()) {
 			for (auto& row_child : row->get_children()) {
 				key* kbd_button = static_cast<key*>(row_child);
 				kbd_button->set_shift(false);
-				kbd_button->get_style_context()->remove_class("toggled");
+				// Only remove toggled class from shift keys
+				if (kbd_button->code == 42 || kbd_button->code == 54) {
+					kbd_button->get_style_context()->remove_class("toggled");
+				}
 			}
 		}
 	}
