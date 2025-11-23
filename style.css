@@ -1,41 +1,65 @@
 #sysboard {
 	background: @theme_base_color;
 	border-top: 1px solid @borders;
+	transition: all 3s linear;
 }
 
 #sysboard label {
 	background: mix(mix(@theme_base_color, CurrentColor, 0.15), blue, 0.005);
 	border-top: 1px solid rgba(255, 255, 255, 0.05);
 	border-radius: 6px;
-	margin: 3px;
+	margin: 7px 3px 7px 3px;
 	box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+	font-size: 18px;
+	transition: background-color 0.1s ease-out;
 }
 
-#sysboard .full .key-Esc,
-#sysboard .full .key-Tab,
-#sysboard .full .key-Caps,
-#sysboard * .key-Shift,
-#sysboard .full .key-Ctrl,
-#sysboard .full .key-Alt,
-#sysboard .full .key-Meta,
-#sysboard .full .key-Space,
-#sysboard .full .key-←,
-#sysboard .full .key-↑,
-#sysboard .full .key-↓,
-#sysboard .full .key-→,
-#sysboard * .key-Enter,
-#sysboard .full .key-\\,
-#sysboard * .key-Backspace,
-#sysboard * .key-123,
-#sysboard * .key-abc {
+/* Custom  colors */
+#sysboard .full .key-Esc label,
+#sysboard .full .key-Tab label,
+#sysboard .full .key-Caps label,
+#sysboard .key-Shift label,
+#sysboard .full .key-Ctrl label,
+#sysboard .full .key-Alt label,
+#sysboard .full .key-Meta label,
+#sysboard .full .key-Space label,
+#sysboard .full .key-← label,
+#sysboard .full .key-↑ label,
+#sysboard .full .key-↓ label,
+#sysboard .full .key-→ label,
+#sysboard .key-Enter label,
+#sysboard .full .key-\\ label,
+#sysboard .key-Backspace label,
+#sysboard .key-123 label,
+#sysboard .key-abc label {
 	background: mix(@theme_base_color, CurrentColor, 0.075);
 }
 
-/* TODO: This doesn't seem to work that well for arrow keys? */
-#sysboard * .toggled,
-#sysboard * .pressed {
-	background: mix(@theme_base_color, CurrentColor, 0.25);
-	border-top: 1px solid rgba(0, 0, 0, 0.1);
-	margin-top: 3px;
-	margin-bottom: -1px;
+#sysboard .key-Shift label,
+#sysboard .key-Backspace label,
+#sysboard .key-Space label,
+#sysboard .key-Enter label {
+	font-size: 0px;
+	background-position: center;
+	background-size: 32px;
+	background-repeat: no-repeat;
+}
+
+#sysboard .key-Shift label {
+	background-image: -gtk-icontheme("keyboard-shift-symbolic");
+}
+
+#sysboard .key-Backspace label {
+	background-image: -gtk-icontheme("edit-clear-symbolic");
+}
+#sysboard .key-Space label {
+	background-image: -gtk-icontheme("keyboard-spacebar");
+}
+#sysboard .key-Enter label {
+	background-image: -gtk-icontheme("keyboard-enter");
+}
+
+#sysboard .key.toggled label,
+#sysboard .key.pressed label {
+	background-color: mix(@theme_base_color, CurrentColor, 0.25);
 }

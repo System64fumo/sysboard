@@ -22,6 +22,7 @@ sysboard::sysboard(const std::map<std::string, std::map<std::string, std::string
 
 	// Initialization
 	set_name("sysboard");
+	set_default_size(-1, stoi(config_main["main"]["height"]));
 	initialize_protos();
 	load_layout();
 
@@ -37,14 +38,7 @@ sysboard::sysboard(const std::map<std::string, std::map<std::string, std::string
 }
 
 void sysboard::load_layout() {
-	auto monitors = gdk_display_get_monitors(gdk_display);
-	auto monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
-
-	GdkRectangle geometry;
-	gdk_monitor_get_geometry(monitor, &geometry);
-	int max_width = geometry.width - (stoi(config_main["main"]["margin"]) * 2);
-
-	layout_board = Gtk::make_managed<layout>(this, config_main["main"]["layout"], max_width);
+	layout_board = Gtk::make_managed<layout>(this, config_main["main"]["layout"]);
 	set_child(*layout_board);
 	layout_board->set_margin(stoi(config_main["main"]["margin"]));
 }

@@ -7,15 +7,13 @@
 #include <bitset>
 #include <sys/time.h>
 
-layout::layout(sysboard *win, const std::string &keymap_name, const int &max_width) : Gtk::Box(Gtk::Orientation::VERTICAL) {
+layout::layout(sysboard *win, const std::string &keymap_name) : Gtk::Grid() {
 	window = win;
 	mods = 0;
 	last_shift_time = 0;
 	shift_held = false;
 	shift_temp = false;
 	this->keymap_name = keymap_name;
-	this->max_width = max_width;
-	set_halign(Gtk::Align::CENTER);
 
 	// Layouts
 	layout_map["full"] = keymap_desktop;
@@ -35,79 +33,46 @@ layout::layout(sysboard *win, const std::string &keymap_name, const int &max_wid
 void layout::load() {
 	keymap = layout_map[keymap_name];
 	add_css_class(keymap_name);
-
-	// Dynamic scaling
-	auto largest_vec_it = std::max_element(
-		keymap.begin(), keymap.end(),
-		[](const auto& a, const auto& b) {
-			return a.size() < b.size();
-		}
-	);
-	btn_size = max_width / largest_vec_it->size();
-
-	// Get the widest row
-	double pixels = 0;
-	for (const std::string& str : *largest_vec_it) {
-		std::istringstream iss(str);
-		double multiplier;
-		int code;
-		std::string label;
-		std::string label_shift;
-		iss >> multiplier >> code >> label >> label_shift;
-
-		pixels += btn_size * multiplier;
-	}
-
-	// Scale the button
-	double scaling_factor = max_width / pixels;
-	btn_size = btn_size * scaling_factor;
+	set_column_homogeneous(true);
+	set_row_homogeneous(true);
 
 	// Rows
+	unsigned int row_counter = 0;
 	for (ulong i = 0; i < keymap.size(); ++i) {
-		Gtk::Box box = Gtk::Box(Gtk::Orientation::HORIZONTAL);
+		int height = keymap[i].first;
 
-		// Keys
-		for (ulong j = 0; j < keymap[i].size(); ++j) {
-			std::istringstream iss(keymap[i][j]);
-			double multiplier;
+		// Columns
+		unsigned int col_counter = 0;
+		for (ulong j = 0; j < keymap[i].second.size(); ++j) {
+			std::istringstream iss(keymap[i].second[j]);
+			unsigned int width;
 			int code;
 			std::string label;
 			std::string label_shift;
-			iss >> multiplier >> code >> label >> label_shift;
+			iss >> width >> code >> label >> label_shift;
 
-			key *kbd_key = Gtk::make_managed<key>(code, label, label_shift);
-			kbd_key->set_focusable(false);
-			kbd_key->set_size_request(btn_size * multiplier, btn_size * std::stod(window->config_main["main"]["height-multiplier"]));
-
-			// TODO: Add different handling for special keys
-			kbd_key->add_css_class("key-" + label);
-
-			Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
-			kbd_key->add_controller(gesture_click);
-
-			// Handle events
-			gesture_click->signal_pressed().connect([&, kbd_key](int, double, double) {
-				handle_keycode(kbd_key, true);
-			});
-			gesture_click->signal_released().connect([&, kbd_key](int, double, double) {
-				handle_keycode(kbd_key, false);
-			});
-
-			box.append(*kbd_key);
-
-			// Starting key
-			if (j == 0) {
-				kbd_key->set_hexpand(true);
-				kbd_key->set_halign((multiplier == 1) ? Gtk::Align::END : Gtk::Align::START);
+			if (label == "Pad") {
+				Gtk::Box* kbd_key = Gtk::make_managed<Gtk::Box>();
+				attach(*kbd_key, col_counter, row_counter, width, height);
 			}
-			// Ending key
-			else if (j == keymap[i].size() - 1) {
-				kbd_key->set_hexpand(true);
-				kbd_key->set_halign((multiplier == 1) ? Gtk::Align::START : Gtk::Align::END);
+			else {
+				key* kbd_key = Gtk::make_managed<key>(code, label, label_shift);
+
+				Glib::RefPtr<Gtk::GestureClick> gesture_click = Gtk::GestureClick::create();
+				kbd_key->add_controller(gesture_click);
+
+				// Handle events
+				gesture_click->signal_pressed().connect([&, kbd_key](int, double, double) {
+					handle_keycode(kbd_key, true);
+				});
+				gesture_click->signal_released().connect([&, kbd_key](int, double, double) {
+					handle_keycode(kbd_key, false);
+				});
+				attach(*kbd_key, col_counter, row_counter, width, height);
 			}
+			col_counter += width;
 		}
-
-		append(box);
+		row_counter += height;
 	}
 }
 
@@ -164,9 +129,9 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 
 		bool shift_active = mods & 1;
 		for (auto& row : get_children()) {
-			for (auto& row_child : row->get_children()) {
-				static_cast<key*>(row_child)->set_shift(shift_active);
-			}
+			if (!row->has_css_class("key")) continue;
+			auto row_key = static_cast<key*>(row);
+			row_key->set_shift(shift_active);
 		}
 		return;
 	}
@@ -191,9 +156,9 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 
 		bool shift_active = mods & 1;
 		for (auto& row : get_children()) {
-			for (auto& row_child : row->get_children()) {
-				static_cast<key*>(row_child)->set_shift(shift_active);
-			}
+			if (!row->has_css_class("key")) continue;
+			auto row_key = static_cast<key*>(row);
+			row_key->set_shift(shift_active);
 		}
 		return;
 	}
@@ -215,13 +180,12 @@ void layout::handle_keycode(key *kbd_key, const bool &pressed) {
 		window->set_modifier(mods);
 
 		for (auto& row : get_children()) {
-			for (auto& row_child : row->get_children()) {
-				key* kbd_button = static_cast<key*>(row_child);
-				kbd_button->set_shift(false);
-				// Only remove toggled class from shift keys
-				if (kbd_button->code == 42 || kbd_button->code == 54) {
-					kbd_button->get_style_context()->remove_class("toggled");
-				}
+			if (!row->has_css_class("key")) continue;
+			key* kbd_button = static_cast<key*>(row);
+			kbd_button->set_shift(false);
+			// Only remove toggled class from shift keys
+			if (kbd_button->code == 42 || kbd_button->code == 54) {
+				kbd_button->get_style_context()->remove_class("toggled");
 			}
 		}
 	}

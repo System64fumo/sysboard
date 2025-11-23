@@ -1,0 +1,7 @@
+.vscode
+build/
+src/git_info.hpp
+src/input-method-unstable-v2.c
+src/input-method-unstable-v2.h
+src/virtual-keyboard-unstable-v1.c
+src/virtual-keyboard-unstable-v1.h

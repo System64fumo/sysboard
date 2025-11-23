@@ -12,7 +12,7 @@ sysboard can be configured in 3 ways<br>
 ```
 arguments:
   -m	Set margin
-  -H	Set height multiplier
+  -H	Set height
   -l	Set layout (full, mobile, mobile_numbers)
   -v	Prints version info
 ```

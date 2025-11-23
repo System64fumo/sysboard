@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 				continue;
 
 			case 'H':
-				config["main"]["height-multiplier"] = optarg;
+				config["main"]["height"] = optarg;
 				continue;
 
 			case 'l':
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 				std::printf("  sysboard [argument...]:\n\n");;
 				std::printf("arguments:\n");;
 				std::printf("  -m	Set margin\n");;
-				std::printf("  -H	Set height multiplier\n");;
+				std::printf("  -H	Set height\n");;
 				std::printf("  -l	Set layout\n");;
 				std::printf("  -v	Prints version info\n");;
 				std::printf("  -h	Show this help message\n");;
